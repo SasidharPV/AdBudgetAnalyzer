@@ -12,6 +12,27 @@ A modern, visual, GitHub Pages-ready web app to estimate job advertisement budge
 - **Calendar Selection** - Click to open native date picker
 - **Select All/Clear All** - Quick platform selection toggles
 
+### 🆕 Role-Based Platform Selection
+- **Smart Auto-Selection** - Choose a job role and relevant platforms are auto-selected
+- **Industry Categories** - Healthcare, Hospitality, Tech, Finance, Education, Trades, Retail, Logistics, Creative
+- **Employment Types** - Part-time, Full-time, Temporary, Graduate role presets
+- **Role Guidance** - Helpful tips showing where each role type typically recruits
+- **Market-Aware** - Matches role requirements to available platforms in your market
+
+**Supported Roles:**
+| Category | Roles |
+|----------|-------|
+| Healthcare | Nurse/Care Worker, Doctor/Medical, Support Staff |
+| Hospitality | Catering/Chef, Hotel/Restaurant, Events Staff |
+| Technology | Developer, Designer, Data Analyst, IT Support |
+| Business | Accountant, Manager, Sales, HR |
+| Education | Teacher/Lecturer, Tutor/TA |
+| Trades | Construction, Electrician/Plumber, Mechanic |
+| Retail | Store Assistant, Customer Service |
+| Logistics | Driver/Delivery, Warehouse |
+| Creative | Marketing, Graphic Design, Content Writer |
+| Employment Type | Part-Time, Full-Time, Temporary, Graduate |
+
 ### Market Support
 - **6 Global Markets** - UK, US, India, Australia, Singapore, UAE
 - **Currency Auto-Matching** - Country selection updates currency automatically
@@ -65,8 +86,8 @@ A modern, visual, GitHub Pages-ready web app to estimate job advertisement budge
 
 | Market | Platforms |
 |--------|-----------|
-| United Kingdom | Indeed UK, Reed, CV-Library, Totaljobs, LinkedIn, Guardian Jobs |
-| United States | Indeed, LinkedIn, ZipRecruiter, Glassdoor, Monster, CareerBuilder |
+| United Kingdom | Indeed UK, Reed, CV-Library, Totaljobs, LinkedIn, Guardian Jobs, NHS Jobs, TES, Caterer.com, Gumtree, Glassdoor |
+| United States | Indeed, LinkedIn, ZipRecruiter, Glassdoor, Monster, CareerBuilder, Dice, HealthcareJobs, Craigslist, Snagajob |
 | India | Naukri, Indeed India, Foundit, TimesJobs, LinkedIn, Shine |
 | Australia | Seek, Indeed Australia, LinkedIn, Jora, CareerOne |
 | Singapore | JobStreet, MyCareersFuture, LinkedIn, Indeed, FastJobs |

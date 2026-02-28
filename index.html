@@ -92,11 +92,72 @@
                 <button type="button" class="preset-btn" data-days="90">3 Months</button>
               </div>
 
+              <fieldset class="role-selector">
+                <legend>Job Role Category (auto-selects recommended platforms)</legend>
+                <div class="role-grid">
+                  <select id="jobRoleSelect">
+                    <option value="">-- Select a job role --</option>
+                    <optgroup label="Healthcare">
+                      <option value="healthcare-nurse">👩‍⚕️ Nurse / Care Worker</option>
+                      <option value="healthcare-doctor">🩺 Doctor / Medical Professional</option>
+                      <option value="healthcare-support">💊 Healthcare Support Staff</option>
+                    </optgroup>
+                    <optgroup label="Hospitality & Catering">
+                      <option value="hospitality-catering">🍳 Catering Assistant / Chef</option>
+                      <option value="hospitality-hotel">🏨 Hotel / Restaurant Staff</option>
+                      <option value="hospitality-events">🎪 Events & Conference Staff</option>
+                    </optgroup>
+                    <optgroup label="Technology & IT">
+                      <option value="tech-developer">💻 Software Developer / Engineer</option>
+                      <option value="tech-designer">🎨 Web Designer / UX Designer</option>
+                      <option value="tech-data">📊 Data Analyst / Data Scientist</option>
+                      <option value="tech-it-support">🖥️ IT Support / Sysadmin</option>
+                    </optgroup>
+                    <optgroup label="Business & Finance">
+                      <option value="finance-accountant">📈 Accountant / Finance</option>
+                      <option value="business-manager">👔 Manager / Executive</option>
+                      <option value="business-sales">📞 Sales / Business Development</option>
+                      <option value="business-hr">👥 HR / Recruitment</option>
+                    </optgroup>
+                    <optgroup label="Education">
+                      <option value="education-teacher">📚 Teacher / Lecturer</option>
+                      <option value="education-tutor">✏️ Tutor / Teaching Assistant</option>
+                    </optgroup>
+                    <optgroup label="Skilled Trades">
+                      <option value="trades-construction">🏗️ Construction / Builder</option>
+                      <option value="trades-electrician">⚡ Electrician / Plumber</option>
+                      <option value="trades-mechanic">🔧 Mechanic / Technician</option>
+                    </optgroup>
+                    <optgroup label="Retail & Customer Service">
+                      <option value="retail-store">🛒 Retail Assistant / Cashier</option>
+                      <option value="retail-customer">📱 Customer Service / Call Centre</option>
+                    </optgroup>
+                    <optgroup label="Logistics & Warehouse">
+                      <option value="logistics-driver">🚚 Driver / Delivery</option>
+                      <option value="logistics-warehouse">📦 Warehouse / Picker Packer</option>
+                    </optgroup>
+                    <optgroup label="Creative & Marketing">
+                      <option value="creative-marketing">📣 Marketing / Digital Marketing</option>
+                      <option value="creative-design">🖼️ Graphic Designer / Creative</option>
+                      <option value="creative-content">✍️ Content Writer / Copywriter</option>
+                    </optgroup>
+                    <optgroup label="Employment Type">
+                      <option value="type-parttime">⏰ Part-Time / Flexible</option>
+                      <option value="type-fulltime">💼 Full-Time Professional</option>
+                      <option value="type-temporary">📅 Temporary / Contract</option>
+                      <option value="type-graduate">🎓 Graduate / Entry Level</option>
+                    </optgroup>
+                  </select>
+                  <div id="roleDescription" class="role-description"></div>
+                </div>
+              </fieldset>
+
               <fieldset class="platform-selector">
                 <legend>Select advertisement platforms</legend>
                 <div class="quick-actions">
                   <button type="button" id="selectAllBtn" class="small-btn">Select All</button>
                   <button type="button" id="selectNoneBtn" class="small-btn">Clear All</button>
+                  <span id="platformSuggestion" class="platform-suggestion"></span>
                 </div>
                 <div id="platformCheckboxList" class="checkbox-grid"></div>
               </fieldset>

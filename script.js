@@ -73,7 +73,47 @@ const DEFAULT_MARKET_RATE_CARDS = {
       pricingModel: "perPost",
       rate: 295,
       minCharge: 0,
-      notes: "4-week listing",
+      notes: "4-week listing - media, education, charity",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "NHS Jobs",
+      pricingModel: "perPost",
+      rate: 0,
+      minCharge: 0,
+      notes: "Free NHS recruitment portal - healthcare only",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "TES (Teaching)",
+      pricingModel: "perPost",
+      rate: 150,
+      minCharge: 0,
+      notes: "Education sector - teachers & support staff",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Caterer.com",
+      pricingModel: "perPost",
+      rate: 120,
+      minCharge: 0,
+      notes: "Hospitality & catering specialist",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Gumtree Jobs",
+      pricingModel: "perPost",
+      rate: 25,
+      minCharge: 0,
+      notes: "Local jobs - part-time, trades, casual",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Glassdoor UK",
+      pricingModel: "perPost",
+      rate: 199,
+      minCharge: 0,
+      notes: "30-day listing with company profile",
     },
   ],
   "United States|USD": [
@@ -124,6 +164,38 @@ const DEFAULT_MARKET_RATE_CARDS = {
       rate: 219,
       minCharge: 0,
       notes: "30-day posting",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Dice (Tech)",
+      pricingModel: "perPost",
+      rate: 395,
+      minCharge: 0,
+      notes: "Tech & IT specialist job board",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "HealthcareJobs",
+      pricingModel: "perPost",
+      rate: 299,
+      minCharge: 0,
+      notes: "Healthcare & medical professionals",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Craigslist Jobs",
+      pricingModel: "perPost",
+      rate: 25,
+      minCharge: 0,
+      notes: "Local classifieds - part-time, trades",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Snagajob",
+      pricingModel: "perPost",
+      rate: 89,
+      minCharge: 0,
+      notes: "Hourly & part-time specialist",
     },
   ],
   "India|INR": [
@@ -304,6 +376,180 @@ const DEFAULT_MARKET_RATE_CARDS = {
   ],
 };
 
+// Role-to-Platform mapping for intelligent auto-selection
+// Keys are role IDs from the select, values are arrays of recommended platform name patterns
+const ROLE_PLATFORM_MAP = {
+  // Healthcare roles - nurses, carers, medical staff
+  "healthcare-nurse": {
+    description: "Healthcare roles typically advertise on NHS Jobs, Indeed, and specialist nursing boards",
+    platforms: ["NHS", "Indeed", "Reed", "Care", "Totaljobs", "LinkedIn", "Guardian"],
+    priorities: ["NHS", "Indeed", "Reed"],
+  },
+  "healthcare-doctor": {
+    description: "Medical professionals often use BMJ Jobs, NHS Jobs, and LinkedIn",
+    platforms: ["NHS", "BMJ", "Indeed", "LinkedIn", "Reed", "Guardian"],
+    priorities: ["NHS", "LinkedIn", "Indeed"],
+  },
+  "healthcare-support": {
+    description: "Healthcare support staff often found through Indeed, Reed, and local health boards",
+    platforms: ["NHS", "Indeed", "Reed", "Totaljobs", "CV-Library", "Care"],
+    priorities: ["Indeed", "Reed", "NHS"],
+  },
+
+  // Hospitality & Catering
+  "hospitality-catering": {
+    description: "Catering roles use Caterer.com, Indeed, and general job boards with high volume hiring",
+    platforms: ["Caterer", "Indeed", "Reed", "Gumtree", "FastJobs", "JobStreet", "Totaljobs"],
+    priorities: ["Indeed", "Caterer", "Reed"],
+  },
+  "hospitality-hotel": {
+    description: "Hotel and restaurant staff recruit via Caterer.com, Indeed, and hospitality-focused boards",
+    platforms: ["Caterer", "Indeed", "Reed", "Totaljobs", "JobStreet", "Bayt", "Gumtree"],
+    priorities: ["Indeed", "Caterer", "Reed"],
+  },
+  "hospitality-events": {
+    description: "Events staff often hired through Indeed, Reed, and temp agency partnerships",
+    platforms: ["Indeed", "Reed", "Totaljobs", "Gumtree", "FastJobs", "CV-Library"],
+    priorities: ["Indeed", "Reed", "Gumtree"],
+  },
+
+  // Technology & IT
+  "tech-developer": {
+    description: "Software developers actively use LinkedIn, Stack Overflow, GitHub Jobs, and Indeed",
+    platforms: ["LinkedIn", "Indeed", "Dice", "AngelList", "Stack", "GitHub", "Seek", "CV-Library"],
+    priorities: ["LinkedIn", "Indeed"],
+  },
+  "tech-designer": {
+    description: "Web and UX designers often found on Dribbble, LinkedIn, Indeed, and creative job boards",
+    platforms: ["LinkedIn", "Indeed", "Dribbble", "Reed", "Totaljobs", "AngelList", "Seek"],
+    priorities: ["LinkedIn", "Indeed"],
+  },
+  "tech-data": {
+    description: "Data professionals use LinkedIn, Indeed, and specialist tech boards",
+    platforms: ["LinkedIn", "Indeed", "Dice", "Glassdoor", "Reed", "Seek", "Totaljobs"],
+    priorities: ["LinkedIn", "Indeed"],
+  },
+  "tech-it-support": {
+    description: "IT support roles advertised on Indeed, Reed, and generalist boards",
+    platforms: ["Indeed", "Reed", "Totaljobs", "CV-Library", "LinkedIn", "Dice", "Seek"],
+    priorities: ["Indeed", "Reed", "LinkedIn"],
+  },
+
+  // Business & Finance
+  "finance-accountant": {
+    description: "Finance professionals use LinkedIn, Reed, Robert Half, and specialist accounting boards",
+    platforms: ["Reed", "LinkedIn", "Indeed", "Totaljobs", "CV-Library", "Glassdoor", "Seek"],
+    priorities: ["Reed", "LinkedIn", "Indeed"],
+  },
+  "business-manager": {
+    description: "Management roles advertised on LinkedIn, Indeed, and executive search boards",
+    platforms: ["LinkedIn", "Indeed", "Reed", "Totaljobs", "Guardian", "Glassdoor", "Seek"],
+    priorities: ["LinkedIn", "Indeed", "Reed"],
+  },
+  "business-sales": {
+    description: "Sales professionals found through LinkedIn, Indeed, and Reed",
+    platforms: ["LinkedIn", "Indeed", "Reed", "Totaljobs", "Glassdoor", "SalesJobs", "CV-Library"],
+    priorities: ["LinkedIn", "Indeed", "Reed"],
+  },
+  "business-hr": {
+    description: "HR professionals recruited via LinkedIn, Reed, and CIPD job boards",
+    platforms: ["LinkedIn", "Reed", "Indeed", "Totaljobs", "Guardian", "Glassdoor", "CIPD"],
+    priorities: ["LinkedIn", "Reed", "Indeed"],
+  },
+
+  // Education
+  "education-teacher": {
+    description: "Teachers use TES, Guardian Jobs, and council job portals",
+    platforms: ["TES", "Guardian", "Indeed", "Reed", "Totaljobs", "Tes", "Council"],
+    priorities: ["TES", "Guardian", "Indeed"],
+  },
+  "education-tutor": {
+    description: "Tutors and teaching assistants found through Indeed, TES, and local boards",
+    platforms: ["Indeed", "TES", "Reed", "Guardian", "Totaljobs", "Gumtree", "Council"],
+    priorities: ["Indeed", "TES", "Reed"],
+  },
+
+  // Skilled Trades
+  "trades-construction": {
+    description: "Construction workers recruited via Indeed, Gumtree, and trade-specific boards",
+    platforms: ["Indeed", "Gumtree", "Reed", "Totaljobs", "CV-Library", "TradeJobs", "Seek"],
+    priorities: ["Indeed", "Gumtree", "Reed"],
+  },
+  "trades-electrician": {
+    description: "Electricians and plumbers found through Indeed, TradeJobs, and local boards",
+    platforms: ["Indeed", "Gumtree", "Reed", "Totaljobs", "TradeJobs", "CV-Library", "Seek"],
+    priorities: ["Indeed", "Gumtree", "Reed"],
+  },
+  "trades-mechanic": {
+    description: "Mechanics and technicians recruited via Indeed, Reed, and automotive boards",
+    platforms: ["Indeed", "Reed", "Gumtree", "Totaljobs", "CV-Library", "Auto", "Seek"],
+    priorities: ["Indeed", "Reed", "Gumtree"],
+  },
+
+  // Retail & Customer Service
+  "retail-store": {
+    description: "Retail positions use Indeed, Reed, and high-volume generalist boards",
+    platforms: ["Indeed", "Reed", "Totaljobs", "CV-Library", "Gumtree", "FastJobs", "Retail"],
+    priorities: ["Indeed", "Reed", "Totaljobs"],
+  },
+  "retail-customer": {
+    description: "Customer service roles found through Indeed, Reed, and call centre boards",
+    platforms: ["Indeed", "Reed", "Totaljobs", "CV-Library", "LinkedIn", "CallCentre", "CustomerService"],
+    priorities: ["Indeed", "Reed", "Totaljobs"],
+  },
+
+  // Logistics & Warehouse
+  "logistics-driver": {
+    description: "Drivers recruited via Indeed, Reed, and specialist logistics boards",
+    platforms: ["Indeed", "Reed", "Totaljobs", "CV-Library", "Gumtree", "DriverJobs", "Logistics"],
+    priorities: ["Indeed", "Reed", "Gumtree"],
+  },
+  "logistics-warehouse": {
+    description: "Warehouse staff found through Indeed, Reed, and temp agencies",
+    platforms: ["Indeed", "Reed", "Totaljobs", "CV-Library", "Gumtree", "FastJobs", "Warehouse"],
+    priorities: ["Indeed", "Reed", "Gumtree"],
+  },
+
+  // Creative & Marketing
+  "creative-marketing": {
+    description: "Marketing professionals use LinkedIn, Indeed, and industry-specific boards",
+    platforms: ["LinkedIn", "Indeed", "Reed", "Totaljobs", "Guardian", "Marketing", "Glassdoor"],
+    priorities: ["LinkedIn", "Indeed", "Reed"],
+  },
+  "creative-design": {
+    description: "Graphic designers found through LinkedIn, Dribbble, and creative job boards",
+    platforms: ["LinkedIn", "Indeed", "Dribbble", "Reed", "Behance", "Creative", "Totaljobs"],
+    priorities: ["LinkedIn", "Indeed"],
+  },
+  "creative-content": {
+    description: "Content writers use LinkedIn, Indeed, and freelance platforms",
+    platforms: ["LinkedIn", "Indeed", "Reed", "Guardian", "ProBlogger", "Contently", "Media"],
+    priorities: ["LinkedIn", "Indeed", "Reed"],
+  },
+
+  // Employment Type based
+  "type-parttime": {
+    description: "Part-time roles often advertised on Indeed, Gumtree, and flexible work boards",
+    platforms: ["Indeed", "Gumtree", "Reed", "CV-Library", "FastJobs", "FlexJobs", "PartTime"],
+    priorities: ["Indeed", "Gumtree", "Reed"],
+  },
+  "type-fulltime": {
+    description: "Full-time professional roles use LinkedIn, Indeed, and major job boards",
+    platforms: ["LinkedIn", "Indeed", "Reed", "Totaljobs", "Glassdoor", "CV-Library", "Seek"],
+    priorities: ["LinkedIn", "Indeed", "Reed"],
+  },
+  "type-temporary": {
+    description: "Temporary and contract roles found through agencies, Indeed, and Reed",
+    platforms: ["Indeed", "Reed", "Totaljobs", "CV-Library", "Gumtree", "Contract", "Temp"],
+    priorities: ["Indeed", "Reed", "Totaljobs"],
+  },
+  "type-graduate": {
+    description: "Graduate roles advertised on LinkedIn, Milkround, and university job boards",
+    platforms: ["LinkedIn", "Indeed", "Milkround", "Graduate", "Reed", "Totaljobs", "Glassdoor"],
+    priorities: ["LinkedIn", "Indeed", "Reed"],
+  },
+};
+
 const colors = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#a855f7", "#06b6d4", "#84cc16"];
 
 const state = {
@@ -353,6 +599,9 @@ const ui = {
   toastContainer: document.getElementById("toastContainer"),
   selectAllBtn: document.getElementById("selectAllBtn"),
   selectNoneBtn: document.getElementById("selectNoneBtn"),
+  jobRoleSelect: document.getElementById("jobRoleSelect"),
+  roleDescription: document.getElementById("roleDescription"),
+  platformSuggestion: document.getElementById("platformSuggestion"),
   durationPresets: document.querySelectorAll(".preset-btn[data-days]"),
   durationMeta: document.getElementById("durationMeta"),
 };
@@ -1147,6 +1396,12 @@ function onMarketCountryChange() {
   state.lastAnalysis = null;
   ui.results.classList.add("hidden");
   ui.emptyState.classList.remove("hidden");
+  
+  // Reset role selector when market changes
+  ui.jobRoleSelect.value = "";
+  ui.roleDescription.classList.remove("visible");
+  ui.roleDescription.textContent = "";
+  ui.platformSuggestion.textContent = "";
 }
 
 function onMarketCurrencyChange() {
@@ -1238,7 +1493,75 @@ function setupPlatformSelection() {
   ui.selectNoneBtn.addEventListener("click", () => {
     const checkboxes = ui.checkboxList.querySelectorAll("input[type='checkbox']");
     checkboxes.forEach((cb) => (cb.checked = false));
+    ui.platformSuggestion.textContent = "";
     showToast("All platforms cleared", "info");
+  });
+}
+
+function setupRoleSelection() {
+  ui.jobRoleSelect.addEventListener("change", () => {
+    const roleId = ui.jobRoleSelect.value;
+    
+    // Clear previous state
+    ui.roleDescription.classList.remove("visible");
+    ui.platformSuggestion.textContent = "";
+    
+    if (!roleId) {
+      ui.roleDescription.textContent = "";
+      return;
+    }
+
+    const roleConfig = ROLE_PLATFORM_MAP[roleId];
+    if (!roleConfig) {
+      return;
+    }
+
+    // Show role description
+    ui.roleDescription.innerHTML = `<strong>Tip:</strong> ${roleConfig.description}`;
+    ui.roleDescription.classList.add("visible");
+
+    // Find matching platforms for this role in current market
+    const checkboxes = ui.checkboxList.querySelectorAll("input[type='checkbox']");
+    let matchedCount = 0;
+    let priorityMatched = [];
+
+    checkboxes.forEach((cb) => {
+      const platformId = cb.value;
+      const platform = state.platforms.find((p) => p.id === platformId);
+      if (!platform) return;
+
+      const platformName = platform.name.toLowerCase();
+      
+      // Check if this platform matches any of the role's recommended patterns
+      const isMatch = roleConfig.platforms.some((pattern) => 
+        platformName.includes(pattern.toLowerCase())
+      );
+      
+      const isPriority = roleConfig.priorities && roleConfig.priorities.some((pattern) =>
+        platformName.includes(pattern.toLowerCase())
+      );
+
+      if (isMatch) {
+        cb.checked = true;
+        matchedCount++;
+        if (isPriority) {
+          priorityMatched.push(platform.name);
+        }
+      } else {
+        cb.checked = false;
+      }
+    });
+
+    // Show feedback
+    if (matchedCount > 0) {
+      const roleName = ui.jobRoleSelect.options[ui.jobRoleSelect.selectedIndex].text;
+      ui.platformSuggestion.textContent = `${matchedCount} platforms selected for ${roleName.replace(/^[^\s]+\s/, "")}`;
+      showToast(`Auto-selected ${matchedCount} recommended platforms`, "success");
+    } else {
+      // No matches in current market - suggest using all
+      ui.platformSuggestion.textContent = "No specific match - consider selecting manually";
+      showToast("No exact platform matches for this role in current market. Select platforms manually.", "info");
+    }
   });
 }
 
@@ -1273,6 +1596,7 @@ function initialize() {
   setupDatePickerBehavior();
   setupDurationPresets();
   setupPlatformSelection();
+  setupRoleSelection();
   setupMarketSelection();
   setupResetDefaults();
 
