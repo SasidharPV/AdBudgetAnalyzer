@@ -12,6 +12,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231e3a8a'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='white'>📊</text></svg>" type="image/svg+xml" />
   </head>
   <body>
     <div class="app-shell">
@@ -206,7 +207,10 @@
                   <div id="barChart" class="bar-chart"></div>
                 </section>
                 <section class="viz-card">
-                  <h3>Share by Platform</h3>
+                  <div class="viz-card-header">
+                    <h3>Share by Platform</h3>
+                    <button type="button" id="copyPieChartBtn" class="small-btn" disabled>📋 Copy</button>
+                  </div>
                   <div class="donut-wrap">
                     <div id="donut" class="donut">
                       <div id="donutCenter" class="donut-center"></div>

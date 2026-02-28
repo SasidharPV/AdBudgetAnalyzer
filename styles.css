@@ -696,6 +696,28 @@ button:disabled {
   letter-spacing: 0.5px;
 }
 
+.viz-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.viz-card-header h3 {
+  margin: 0;
+}
+
+.viz-card-header .small-btn {
+  font-size: 11px;
+  padding: 4px 10px;
+  opacity: 0.8;
+  transition: opacity var(--transition-fast);
+}
+
+.viz-card-header .small-btn:hover:not(:disabled) {
+  opacity: 1;
+}
+
 /* Bar Chart */
 .bar-chart {
   display: grid;

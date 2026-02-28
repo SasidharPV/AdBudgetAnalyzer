@@ -596,6 +596,7 @@ const ui = {
   copyReportBtn: document.getElementById("copyReportBtn"),
   copyTableBtn: document.getElementById("copyTableBtn"),
   copyChartBtn: document.getElementById("copyChartBtn"),
+  copyPieChartBtn: document.getElementById("copyPieChartBtn"),
   toastContainer: document.getElementById("toastContainer"),
   selectAllBtn: document.getElementById("selectAllBtn"),
   selectNoneBtn: document.getElementById("selectNoneBtn"),
@@ -1018,6 +1019,106 @@ async function copyChartImage() {
   }
 }
 
+function renderPieChartCanvas(analysis) {
+  const size = 400;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size + 100;
+  const ctx = canvas.getContext("2d");
+
+  // Background
+  ctx.fillStyle = "#0f172a";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const centerX = size / 2;
+  const centerY = size / 2;
+  const radius = 140;
+  const innerRadius = 80;
+
+  // Draw pie segments
+  let currentAngle = -Math.PI / 2;
+  analysis.breakdown.forEach((item, index) => {
+    const percent = analysis.total === 0 ? 0 : item.cost / analysis.total;
+    const sliceAngle = percent * 2 * Math.PI;
+
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY);
+    ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+    ctx.closePath();
+    ctx.fillStyle = colors[index % colors.length];
+    ctx.fill();
+
+    currentAngle += sliceAngle;
+  });
+
+  // Draw inner circle (donut hole)
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI);
+  ctx.fillStyle = "#0f172a";
+  ctx.fill();
+
+  // Center text
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 28px Inter, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(analysis.breakdown.length.toString(), centerX, centerY - 5);
+  ctx.font = "14px Inter, sans-serif";
+  ctx.fillStyle = "#94a3b8";
+  ctx.fillText("platforms", centerX, centerY + 18);
+
+  // Legend
+  const legendY = size + 20;
+  const legendItemWidth = size / Math.min(analysis.breakdown.length, 3);
+  ctx.font = "12px Inter, sans-serif";
+
+  analysis.breakdown.forEach((item, index) => {
+    const row = Math.floor(index / 3);
+    const col = index % 3;
+    const x = 20 + col * (size / 3);
+    const y = legendY + row * 25;
+
+    // Color dot
+    ctx.fillStyle = colors[index % colors.length];
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Label
+    ctx.fillStyle = "#f1f5f9";
+    ctx.textAlign = "left";
+    const percent = analysis.total === 0 ? 0 : (item.cost / analysis.total) * 100;
+    ctx.fillText(`${item.name} (${percent.toFixed(1)}%)`, x + 12, y + 4);
+  });
+
+  return canvas;
+}
+
+async function copyPieChartImage() {
+  if (!state.lastAnalysis) {
+    showToast("Run an analysis before copying.", "error");
+    return;
+  }
+
+  const canvas = renderPieChartCanvas(state.lastAnalysis);
+  if (!navigator.clipboard || typeof ClipboardItem === "undefined") {
+    setCopyStatus("Image clipboard not supported here. Use Export PDF as fallback.", true);
+    return;
+  }
+
+  try {
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+    if (!blob) {
+      setCopyStatus("Could not generate pie chart image.", true);
+      return;
+    }
+
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    setCopyStatus("Pie chart copied. Paste directly into PPT/Docs.");
+  } catch {
+    setCopyStatus("Could not copy pie chart image. Browser permissions may block it.", true);
+  }
+}
+
 function renderBarChart(breakdown, total) {
   ui.barChart.innerHTML = "";
   const sortedBreakdown = [...breakdown].sort((a, b) => b.cost - a.cost);
@@ -1087,6 +1188,7 @@ function renderResults({ days, breakdown, total }) {
   ui.copyReportBtn.disabled = false;
   ui.copyTableBtn.disabled = false;
   ui.copyChartBtn.disabled = false;
+  ui.copyPieChartBtn.disabled = false;
 
   ui.breakdownBody.innerHTML = "";
   breakdown.forEach((item) => {
@@ -1609,6 +1711,7 @@ function initialize() {
   ui.copyReportBtn.addEventListener("click", copyReportText);
   ui.copyTableBtn.addEventListener("click", copyTableText);
   ui.copyChartBtn.addEventListener("click", copyChartImage);
+  ui.copyPieChartBtn.addEventListener("click", copyPieChartImage);
 }
 
 initialize();
