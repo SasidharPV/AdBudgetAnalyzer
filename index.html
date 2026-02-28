@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ad Budget Analyzer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Simple • Fast • GitHub Pages Ready</p>
+          <h1>Ad Budget Analyzer</h1>
+          <p class="subtitle">
+            Plan job-ad posting cost by platform and campaign duration with editable rate cards.
+          </p>
+        </div>
+      </header>
+
+      <nav class="tabs" aria-label="Main tabs">
+        <button class="tab-button active" data-tab="analyzer">Budget Analysis</button>
+        <button class="tab-button" data-tab="config">Configuration</button>
+      </nav>
+
+      <main>
+        <section id="analyzer" class="tab-panel active">
+          <div class="panel">
+            <h2>Campaign Inputs</h2>
+            <form id="analysisForm" class="form-grid">
+              <label>
+                Campaign name
+                <input type="text" id="campaignName" placeholder="Hiring Backend Engineer" />
+              </label>
+              <label>
+                Start date
+                <input type="date" id="startDate" required />
+              </label>
+              <label>
+                End date
+                <input type="date" id="endDate" required />
+              </label>
+
+              <fieldset class="platform-selector">
+                <legend>Select advertisement platforms</legend>
+                <div id="platformCheckboxList" class="checkbox-grid"></div>
+              </fieldset>
+
+              <button type="submit" class="primary-btn">Analyze Budget</button>
+            </form>
+          </div>
+
+          <div class="panel">
+            <h2>Estimated Budget</h2>
+            <div id="emptyState" class="empty-state">
+              Fill inputs and click <strong>Analyze Budget</strong> to see cost breakdown.
+            </div>
+
+            <div id="results" class="hidden">
+              <div class="summary-cards">
+                <article class="card">
+                  <p>Total Budget</p>
+                  <h3 id="totalBudget">$0</h3>
+                </article>
+                <article class="card">
+                  <p>Duration</p>
+                  <h3 id="durationDays">0 days</h3>
+                </article>
+                <article class="card">
+                  <p>Platforms</p>
+                  <h3 id="platformCount">0</h3>
+                </article>
+              </div>
+
+              <div class="viz-grid">
+                <section class="viz-card">
+                  <h3>Platform Cost Split</h3>
+                  <div id="barChart" class="bar-chart"></div>
+                </section>
+                <section class="viz-card">
+                  <h3>Share by Platform</h3>
+                  <div class="donut-wrap">
+                    <div id="donut" class="donut"></div>
+                    <ul id="donutLegend" class="legend"></ul>
+                  </div>
+                </section>
+              </div>
+
+              <section class="table-wrap">
+                <h3>Detailed Breakdown</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Platform</th>
+                      <th>Pricing Model</th>
+                      <th>Rate</th>
+                      <th>Units</th>
+                      <th>Estimated Cost</th>
+                    </tr>
+                  </thead>
+                  <tbody id="breakdownBody"></tbody>
+                </table>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section id="config" class="tab-panel">
+          <div class="panel">
+            <h2>Rate Card Configuration</h2>
+            <p class="subtitle">
+              Update default platform rates, remove old ones, or add new websites/channels.
+            </p>
+
+            <form id="platformForm" class="form-grid compact">
+              <input type="hidden" id="editingId" />
+              <label>
+                Platform name
+                <input type="text" id="platformName" placeholder="ExampleJobs" required />
+              </label>
+              <label>
+                Pricing model
+                <select id="pricingModel" required>
+                  <option value="perDay">Per Day</option>
+                  <option value="perWeek">Per Week</option>
+                  <option value="perPost">Per Post</option>
+                </select>
+              </label>
+              <label>
+                Rate (USD)
+                <input type="number" id="rate" min="0" step="0.01" required />
+              </label>
+              <label>
+                Minimum Charge (USD)
+                <input type="number" id="minCharge" min="0" step="0.01" value="0" />
+              </label>
+              <label class="full-width">
+                Notes
+                <input type="text" id="notes" placeholder="Optional details" />
+              </label>
+              <div class="action-row full-width">
+                <button type="submit" class="primary-btn">Save Platform</button>
+                <button type="button" id="clearFormBtn" class="ghost-btn">Clear</button>
+                <button type="button" id="resetDefaultsBtn" class="danger-btn">Reset to Defaults</button>
+              </div>
+            </form>
+
+            <section class="table-wrap">
+              <h3>Configured Platforms</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Platform</th>
+                    <th>Model</th>
+                    <th>Rate</th>
+                    <th>Minimum</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="platformTableBody"></tbody>
+              </table>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
