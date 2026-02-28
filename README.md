@@ -15,6 +15,9 @@ A simple, visual, GitHub Pages-ready web app to estimate job advertisement budge
   - Bar-based platform split
   - Donut share chart
   - Detailed calculation table
+- Export options:
+  - CSV download for spreadsheet usage
+  - PDF-ready report export via browser print dialog
 - Data persistence using browser `localStorage`
 
 ## Run locally

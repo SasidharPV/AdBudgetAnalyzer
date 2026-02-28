@@ -47,12 +47,14 @@ const colors = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#a855f7", "#06b6d4"
 
 const state = {
   platforms: [],
+  lastAnalysis: null,
 };
 
 const ui = {
   tabs: document.querySelectorAll(".tab-button"),
   panels: document.querySelectorAll(".tab-panel"),
   analysisForm: document.getElementById("analysisForm"),
+  campaignName: document.getElementById("campaignName"),
   startDate: document.getElementById("startDate"),
   endDate: document.getElementById("endDate"),
   checkboxList: document.getElementById("platformCheckboxList"),
@@ -75,6 +77,8 @@ const ui = {
   platformTableBody: document.getElementById("platformTableBody"),
   clearFormBtn: document.getElementById("clearFormBtn"),
   resetDefaultsBtn: document.getElementById("resetDefaultsBtn"),
+  exportCsvBtn: document.getElementById("exportCsvBtn"),
+  exportPdfBtn: document.getElementById("exportPdfBtn"),
 };
 
 function formatCurrency(value) {
@@ -124,6 +128,24 @@ function calculateCost(platform, days) {
   const units = unitsForDuration(platform, days);
   const cost = Math.max(units * Number(platform.rate), Number(platform.minCharge || 0));
   return { units, cost };
+}
+
+function formatDate(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  }).format(date);
+}
+
+function formatDateIso(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
 }
 
 function renderPlatformCheckboxes() {
@@ -213,6 +235,17 @@ function analyzeBudget(event) {
   });
 
   const total = breakdown.reduce((sum, current) => sum + current.cost, 0);
+  const campaignName = ui.campaignName.value.trim() || "Untitled Campaign";
+
+  state.lastAnalysis = {
+    campaignName,
+    startDate: ui.startDate.value,
+    endDate: ui.endDate.value,
+    days,
+    breakdown,
+    total,
+  };
+
   renderResults({ days, breakdown, total });
 }
 
@@ -223,6 +256,8 @@ function renderResults({ days, breakdown, total }) {
   ui.totalBudget.textContent = formatCurrency(total);
   ui.durationDays.textContent = `${days} day${days > 1 ? "s" : ""}`;
   ui.platformCount.textContent = String(breakdown.length);
+  ui.exportCsvBtn.disabled = false;
+  ui.exportPdfBtn.disabled = false;
 
   ui.breakdownBody.innerHTML = "";
   breakdown.forEach((item) => {
@@ -239,6 +274,137 @@ function renderResults({ days, breakdown, total }) {
 
   renderBarChart(breakdown, total);
   renderDonut(breakdown, total);
+}
+
+function csvEscape(value) {
+  const text = String(value ?? "");
+  if (text.includes(",") || text.includes("\n") || text.includes('"')) {
+    return `"${text.replaceAll('"', '""')}"`;
+  }
+  return text;
+}
+
+function exportCsv() {
+  if (!state.lastAnalysis) {
+    alert("Run an analysis before exporting.");
+    return;
+  }
+
+  const { campaignName, startDate, endDate, days, total, breakdown } = state.lastAnalysis;
+  const headerRows = [
+    ["Campaign", campaignName],
+    ["Start Date", formatDate(startDate)],
+    ["End Date", formatDate(endDate)],
+    ["Duration (Days)", days],
+    ["Total Budget", total.toFixed(2)],
+    [],
+    ["Platform", "Pricing Model", "Rate", "Units", "Estimated Cost", "Notes"],
+  ];
+
+  const rows = breakdown.map((item) => [
+    item.name,
+    pricingModelLabel(item.pricingModel),
+    Number(item.rate).toFixed(2),
+    item.units,
+    Number(item.cost).toFixed(2),
+    item.notes || "",
+  ]);
+
+  const csv = [...headerRows, ...rows].map((row) => row.map(csvEscape).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `ad-budget-${formatDateIso(startDate) || "report"}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function exportPdf() {
+  if (!state.lastAnalysis) {
+    alert("Run an analysis before exporting.");
+    return;
+  }
+
+  const { campaignName, startDate, endDate, days, total, breakdown } = state.lastAnalysis;
+  const tableRows = breakdown
+    .map(
+      (item) => `
+      <tr>
+        <td>${item.name}</td>
+        <td>${pricingModelLabel(item.pricingModel)}</td>
+        <td>${formatCurrency(Number(item.rate))}</td>
+        <td>${item.units}</td>
+        <td>${formatCurrency(item.cost)}</td>
+      </tr>
+    `
+    )
+    .join("");
+
+  const reportHtml = `
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <title>Ad Budget Report</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 24px; color: #111827; }
+          h1 { margin-bottom: 6px; }
+          .meta { margin-bottom: 16px; color: #374151; }
+          .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+          .card { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px; }
+          .card p { margin: 0; color: #6b7280; font-size: 12px; }
+          .card h3 { margin: 4px 0 0; font-size: 18px; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { border: 1px solid #d1d5db; text-align: left; padding: 8px; font-size: 13px; }
+          th { background: #f3f4f6; }
+        </style>
+      </head>
+      <body>
+        <h1>Ad Budget Report</h1>
+        <div class="meta">
+          <div><strong>Campaign:</strong> ${campaignName}</div>
+          <div><strong>Duration:</strong> ${formatDate(startDate)} to ${formatDate(endDate)} (${days} days)</div>
+          <div><strong>Generated:</strong> ${formatDate(new Date().toISOString())}</div>
+        </div>
+
+        <div class="summary">
+          <div class="card"><p>Total Budget</p><h3>${formatCurrency(total)}</h3></div>
+          <div class="card"><p>Platforms</p><h3>${breakdown.length}</h3></div>
+          <div class="card"><p>Duration</p><h3>${days} day${days > 1 ? "s" : ""}</h3></div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Platform</th>
+              <th>Pricing Model</th>
+              <th>Rate</th>
+              <th>Units</th>
+              <th>Estimated Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+      </body>
+    </html>
+  `;
+
+  const reportWindow = window.open("", "_blank", "width=980,height=700");
+  if (!reportWindow) {
+    alert("Popup blocked. Please allow popups to export PDF.");
+    return;
+  }
+
+  reportWindow.document.open();
+  reportWindow.document.write(reportHtml);
+  reportWindow.document.close();
+  reportWindow.focus();
+  reportWindow.print();
 }
 
 function renderBarChart(breakdown, total) {
@@ -374,6 +540,8 @@ function initialize() {
   ui.platformForm.addEventListener("submit", onPlatformFormSubmit);
   ui.platformTableBody.addEventListener("click", onTableAction);
   ui.clearFormBtn.addEventListener("click", resetPlatformForm);
+  ui.exportCsvBtn.addEventListener("click", exportCsv);
+  ui.exportPdfBtn.addEventListener("click", exportPdf);
   setupResetDefaults();
 }
 

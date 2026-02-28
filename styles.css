@@ -183,6 +183,15 @@ legend {
   flex-wrap: wrap;
 }
 
+.export-row {
+  margin-bottom: 12px;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .summary-cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
