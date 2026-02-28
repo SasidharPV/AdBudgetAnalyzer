@@ -6,14 +6,16 @@ A simple, visual, GitHub Pages-ready web app to estimate job advertisement budge
 
 - Analyze budget by **date range** and selected platforms
 - Calendar-based date selection for campaign start/end
-- Built-in default rate cards for global + local job-ad websites
+- Built-in market-specific rate cards (UK/US/India/Australia/Singapore/UAE)
+- Default market is **United Kingdom (GBP)**
 - Configuration tab to:
   - Edit existing rates
   - Add new websites/channels
-  - Set country and currency per rate card
   - Delete platforms
-  - Reset to default list
-- Analysis filters for country and currency
+  - Reset to default list for current market
+- Global market selector (country + currency) applies to the entire app
+- Switching market loads that market's own rate cards and pricing style
+- If you change only currency and no profile exists yet, rates are auto-converted as a starting point
 - Cost breakdown visualizations:
   - Bar-based platform split
   - Donut share chart
@@ -41,6 +43,6 @@ Open `index.html` in your browser.
 
 ## Notes
 
-- Supports multi-currency rate cards by platform.
+- Uses one currency per selected market.
 - Platform rates are editable in the **Configuration** tab.
-- Rates are estimates and should be updated based on latest platform pricing.
+- Rates are market estimates and should be updated based on latest platform pricing in that country.

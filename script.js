@@ -1,101 +1,178 @@
-const STORAGE_KEY = "adBudgetPlatforms";
+const LEGACY_STORAGE_KEY = "adBudgetPlatforms";
+const MARKET_STORAGE_KEY = "adBudgetPlatformsByMarket";
+const MARKET_PREF_KEY = "adBudgetSelectedMarket";
 
-const DEFAULT_PLATFORMS = [
-  {
-    id: crypto.randomUUID(),
-    name: "LinkedIn Jobs",
-    country: "United States",
-    currency: "USD",
-    pricingModel: "perDay",
-    rate: 45,
-    minCharge: 0,
-    notes: "Typical sponsored job daily run",
-  },
-  {
-    id: crypto.randomUUID(),
-    name: "Indeed Sponsored",
-    country: "United States",
-    currency: "USD",
-    pricingModel: "perDay",
-    rate: 32,
-    minCharge: 0,
-    notes: "Average CPC-driven equivalent daily budget",
-  },
-  {
-    id: crypto.randomUUID(),
-    name: "Naukri",
-    country: "India",
-    currency: "INR",
-    pricingModel: "perWeek",
-    rate: 4500,
-    minCharge: 0,
-    notes: "Weekly visibility package",
-  },
-  {
-    id: crypto.randomUUID(),
-    name: "Foundit",
-    country: "India",
-    currency: "INR",
-    pricingModel: "perWeek",
-    rate: 3800,
-    minCharge: 0,
-    notes: "Job posting + database access bundle",
-  },
-  {
-    id: crypto.randomUUID(),
-    name: "TimesJobs",
-    country: "India",
-    currency: "INR",
-    pricingModel: "perPost",
-    rate: 2500,
-    minCharge: 0,
-    notes: "Single listing package",
-  },
-  {
-    id: crypto.randomUUID(),
-    name: "Seek",
-    country: "Australia",
-    currency: "AUD",
-    pricingModel: "perPost",
-    rate: 250,
-    minCharge: 0,
-    notes: "Standard listing",
-  },
-  {
-    id: crypto.randomUUID(),
-    name: "Reed",
-    country: "United Kingdom",
-    currency: "GBP",
-    pricingModel: "perPost",
-    rate: 89,
-    minCharge: 0,
-    notes: "Single ad slot",
-  },
-  {
-    id: crypto.randomUUID(),
-    name: "JobStreet",
-    country: "Singapore",
-    currency: "SGD",
-    pricingModel: "perPost",
-    rate: 180,
-    minCharge: 0,
-    notes: "Single post package",
-  },
-  {
-    id: crypto.randomUUID(),
-    name: "Bayt",
-    country: "United Arab Emirates",
-    currency: "AED",
-    pricingModel: "perWeek",
-    rate: 650,
-    minCharge: 0,
-    notes: "Weekly promoted listing",
-  },
-];
+const MARKET_CURRENCY_MAP = {
+  "United Kingdom": "GBP",
+  "United States": "USD",
+  India: "INR",
+  Australia: "AUD",
+  Singapore: "SGD",
+  "United Arab Emirates": "AED",
+};
+
+const FX_TO_GBP = {
+  GBP: 1,
+  USD: 0.79,
+  INR: 0.0095,
+  AUD: 0.52,
+  SGD: 0.59,
+  AED: 0.215,
+};
+
+const DEFAULT_SELECTED_MARKET = {
+  country: "United Kingdom",
+  currency: "GBP",
+};
+
+const DEFAULT_MARKET_RATE_CARDS = {
+  "United Kingdom|GBP": [
+    {
+      id: crypto.randomUUID(),
+      name: "Reed",
+      pricingModel: "perPost",
+      rate: 89,
+      minCharge: 0,
+      notes: "Standard UK listing",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "CV-Library",
+      pricingModel: "perPost",
+      rate: 79,
+      minCharge: 0,
+      notes: "Single post package",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Totaljobs",
+      pricingModel: "perPost",
+      rate: 109,
+      minCharge: 0,
+      notes: "Premium UK job board",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "LinkedIn Jobs",
+      pricingModel: "perDay",
+      rate: 35,
+      minCharge: 0,
+      notes: "UK sponsored daily budget estimate",
+    },
+  ],
+  "United States|USD": [
+    {
+      id: crypto.randomUUID(),
+      name: "Indeed Sponsored",
+      pricingModel: "perDay",
+      rate: 32,
+      minCharge: 0,
+      notes: "Average sponsored daily spend",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "LinkedIn Jobs",
+      pricingModel: "perDay",
+      rate: 45,
+      minCharge: 0,
+      notes: "Typical sponsored daily budget",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "ZipRecruiter",
+      pricingModel: "perPost",
+      rate: 99,
+      minCharge: 0,
+      notes: "Standard single post",
+    },
+  ],
+  "India|INR": [
+    {
+      id: crypto.randomUUID(),
+      name: "Naukri",
+      pricingModel: "perWeek",
+      rate: 4500,
+      minCharge: 0,
+      notes: "Weekly visibility package",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Foundit",
+      pricingModel: "perWeek",
+      rate: 3800,
+      minCharge: 0,
+      notes: "Hiring bundle estimate",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "TimesJobs",
+      pricingModel: "perPost",
+      rate: 2500,
+      minCharge: 0,
+      notes: "Single listing package",
+    },
+  ],
+  "Australia|AUD": [
+    {
+      id: crypto.randomUUID(),
+      name: "Seek",
+      pricingModel: "perPost",
+      rate: 250,
+      minCharge: 0,
+      notes: "Standard listing",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "LinkedIn Jobs",
+      pricingModel: "perDay",
+      rate: 58,
+      minCharge: 0,
+      notes: "Sponsored daily budget estimate",
+    },
+  ],
+  "Singapore|SGD": [
+    {
+      id: crypto.randomUUID(),
+      name: "JobStreet",
+      pricingModel: "perPost",
+      rate: 180,
+      minCharge: 0,
+      notes: "Single post package",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "MyCareersFuture",
+      pricingModel: "perPost",
+      rate: 0,
+      minCharge: 0,
+      notes: "Government portal (can be free depending on listing)",
+    },
+  ],
+  "United Arab Emirates|AED": [
+    {
+      id: crypto.randomUUID(),
+      name: "Bayt",
+      pricingModel: "perWeek",
+      rate: 650,
+      minCharge: 0,
+      notes: "Weekly promoted listing",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Naukrigulf",
+      pricingModel: "perPost",
+      rate: 300,
+      minCharge: 0,
+      notes: "Standard job post",
+    },
+  ],
+};
 
 const colors = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#a855f7", "#06b6d4", "#84cc16"];
 
 const state = {
+  selectedMarket: { ...DEFAULT_SELECTED_MARKET },
+  platformsByMarket: {},
   platforms: [],
   lastAnalysis: null,
 };
@@ -103,12 +180,12 @@ const state = {
 const ui = {
   tabs: document.querySelectorAll(".tab-button"),
   panels: document.querySelectorAll(".tab-panel"),
+  marketCountry: document.getElementById("marketCountry"),
+  marketCurrency: document.getElementById("marketCurrency"),
   analysisForm: document.getElementById("analysisForm"),
   campaignName: document.getElementById("campaignName"),
   startDate: document.getElementById("startDate"),
   endDate: document.getElementById("endDate"),
-  analysisCountry: document.getElementById("analysisCountry"),
-  analysisCurrency: document.getElementById("analysisCurrency"),
   dateButtons: document.querySelectorAll(".date-btn"),
   checkboxList: document.getElementById("platformCheckboxList"),
   results: document.getElementById("results"),
@@ -125,8 +202,6 @@ const ui = {
   platformForm: document.getElementById("platformForm"),
   editingId: document.getElementById("editingId"),
   platformName: document.getElementById("platformName"),
-  country: document.getElementById("country"),
-  currency: document.getElementById("currency"),
   pricingModel: document.getElementById("pricingModel"),
   rate: document.getElementById("rate"),
   minCharge: document.getElementById("minCharge"),
@@ -142,24 +217,23 @@ const ui = {
   copyStatus: document.getElementById("copyStatus"),
 };
 
-function formatCurrency(value, currency = "USD") {
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 2,
-    }).format(value);
-  } catch {
-    return `${Number(value).toFixed(2)} ${currency}`;
-  }
+function marketKey(country, currency) {
+  return `${country}|${currency}`;
+}
+
+function convertAmount(value, fromCurrency, toCurrency) {
+  const fromToGbp = FX_TO_GBP[fromCurrency];
+  const toToGbp = FX_TO_GBP[toCurrency];
+  if (!fromToGbp || !toToGbp) return Number(value);
+
+  const inGbp = Number(value) * fromToGbp;
+  return inGbp / toToGbp;
 }
 
 function sanitizePlatform(platform) {
   return {
     id: platform.id || crypto.randomUUID(),
     name: platform.name || "Unnamed Platform",
-    country: platform.country || "Global",
-    currency: platform.currency || "USD",
     pricingModel: platform.pricingModel || "perPost",
     rate: Number(platform.rate ?? 0),
     minCharge: Number(platform.minCharge ?? 0),
@@ -167,27 +241,16 @@ function sanitizePlatform(platform) {
   };
 }
 
-function readPlatforms() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PLATFORMS));
-    return DEFAULT_PLATFORMS.map((item) => ({ ...item }));
-  }
-
+function formatCurrency(value, currency = "GBP") {
   try {
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed.map(sanitizePlatform);
-    }
+    return new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 2,
+    }).format(value);
   } catch {
-    return DEFAULT_PLATFORMS.map((item) => ({ ...item }));
+    return `${Number(value).toFixed(2)} ${currency}`;
   }
-
-  return DEFAULT_PLATFORMS.map((item) => ({ ...item }));
-}
-
-function persistPlatforms() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.platforms));
 }
 
 function pricingModelLabel(model) {
@@ -212,7 +275,7 @@ function formatDate(value) {
   if (!value) return "-";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("en-GB", {
     year: "numeric",
     month: "short",
     day: "2-digit",
@@ -226,59 +289,140 @@ function formatDateIso(value) {
   return date.toISOString().slice(0, 10);
 }
 
-function uniqueValues(values) {
-  return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
-}
-
-function renderAnalysisFilters() {
-  const countryOptions = uniqueValues(state.platforms.map((item) => item.country));
-  const currencyOptions = uniqueValues(state.platforms.map((item) => item.currency));
-
-  const prevCountry = ui.analysisCountry.value || "all";
-  const prevCurrency = ui.analysisCurrency.value || "all";
-
-  ui.analysisCountry.innerHTML = `<option value="all">All Countries</option>${countryOptions
-    .map((country) => `<option value="${country}">${country}</option>`)
-    .join("")}`;
-
-  ui.analysisCurrency.innerHTML = `<option value="all">All Currencies</option>${currencyOptions
-    .map((currency) => `<option value="${currency}">${currency}</option>`)
-    .join("")}`;
-
-  ui.analysisCountry.value = countryOptions.includes(prevCountry) ? prevCountry : "all";
-  ui.analysisCurrency.value = currencyOptions.includes(prevCurrency) ? prevCurrency : "all";
-}
-
-function getFilteredPlatforms() {
-  const countryFilter = ui.analysisCountry.value;
-  const currencyFilter = ui.analysisCurrency.value;
-
-  return state.platforms.filter((platform) => {
-    const countryMatch = countryFilter === "all" || platform.country === countryFilter;
-    const currencyMatch = currencyFilter === "all" || platform.currency === currencyFilter;
-    return countryMatch && currencyMatch;
+function cloneDefaultMarketCards() {
+  const cloned = {};
+  Object.entries(DEFAULT_MARKET_RATE_CARDS).forEach(([key, platforms]) => {
+    cloned[key] = platforms.map((item) => ({ ...item, id: crypto.randomUUID() }));
   });
+  return cloned;
+}
+
+function migrateLegacyIfNeeded() {
+  const existingMarketData = localStorage.getItem(MARKET_STORAGE_KEY);
+  if (existingMarketData) return;
+
+  const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
+  if (!legacyRaw) {
+    localStorage.setItem(MARKET_STORAGE_KEY, JSON.stringify(cloneDefaultMarketCards()));
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(legacyRaw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem(MARKET_STORAGE_KEY, JSON.stringify(cloneDefaultMarketCards()));
+      return;
+    }
+
+    const marketCards = cloneDefaultMarketCards();
+    parsed.forEach((item) => {
+      const country = item.country || "United States";
+      const currency = item.currency || MARKET_CURRENCY_MAP[country] || "USD";
+      const key = marketKey(country, currency);
+      if (!marketCards[key]) {
+        marketCards[key] = [];
+      }
+      marketCards[key].push(
+        sanitizePlatform({
+          ...item,
+          id: crypto.randomUUID(),
+        })
+      );
+    });
+
+    localStorage.setItem(MARKET_STORAGE_KEY, JSON.stringify(marketCards));
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+  } catch {
+    localStorage.setItem(MARKET_STORAGE_KEY, JSON.stringify(cloneDefaultMarketCards()));
+  }
+}
+
+function readSelectedMarket() {
+  const raw = localStorage.getItem(MARKET_PREF_KEY);
+  if (!raw) return { ...DEFAULT_SELECTED_MARKET };
+
+  try {
+    const parsed = JSON.parse(raw);
+    const country = parsed.country || DEFAULT_SELECTED_MARKET.country;
+    const currency = parsed.currency || MARKET_CURRENCY_MAP[country] || DEFAULT_SELECTED_MARKET.currency;
+    return { country, currency };
+  } catch {
+    return { ...DEFAULT_SELECTED_MARKET };
+  }
+}
+
+function persistSelectedMarket() {
+  localStorage.setItem(MARKET_PREF_KEY, JSON.stringify(state.selectedMarket));
+}
+
+function readPlatformsByMarket() {
+  const raw = localStorage.getItem(MARKET_STORAGE_KEY);
+  if (!raw) {
+    return cloneDefaultMarketCards();
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object") {
+      const normalized = {};
+      Object.entries(parsed).forEach(([key, list]) => {
+        normalized[key] = Array.isArray(list) ? list.map(sanitizePlatform) : [];
+      });
+      return { ...cloneDefaultMarketCards(), ...normalized };
+    }
+  } catch {
+    return cloneDefaultMarketCards();
+  }
+
+  return cloneDefaultMarketCards();
+}
+
+function persistPlatformsByMarket() {
+  localStorage.setItem(MARKET_STORAGE_KEY, JSON.stringify(state.platformsByMarket));
+}
+
+function loadCurrentMarketPlatforms() {
+  const key = marketKey(state.selectedMarket.country, state.selectedMarket.currency);
+  if (!state.platformsByMarket[key]) {
+    state.platformsByMarket[key] = [];
+  }
+  state.platforms = state.platformsByMarket[key].map((item) => ({ ...item }));
+}
+
+function saveCurrentMarketPlatforms() {
+  const key = marketKey(state.selectedMarket.country, state.selectedMarket.currency);
+  state.platformsByMarket[key] = state.platforms.map((item) => ({ ...item }));
+  persistPlatformsByMarket();
+}
+
+function setCopyStatus(message, isError = false) {
+  ui.copyStatus.textContent = message;
+  ui.copyStatus.style.color = isError ? "#fca5a5" : "#cbd5e1";
+}
+
+function refreshMarketUI() {
+  ui.marketCountry.value = state.selectedMarket.country;
+  ui.marketCurrency.value = state.selectedMarket.currency;
 }
 
 function renderPlatformCheckboxes() {
   ui.checkboxList.innerHTML = "";
-  const filtered = getFilteredPlatforms();
 
-  if (filtered.length === 0) {
+  if (state.platforms.length === 0) {
     const message = document.createElement("p");
-    message.textContent = "No platforms match current country/currency filters.";
+    message.textContent = "No platforms configured for this market. Add platforms in Configuration.";
     ui.checkboxList.appendChild(message);
     return;
   }
 
-  filtered.forEach((platform) => {
+  state.platforms.forEach((platform) => {
     const label = document.createElement("label");
     const input = document.createElement("input");
     input.type = "checkbox";
     input.value = platform.id;
 
     const text = document.createElement("span");
-    text.textContent = `${platform.name} • ${platform.country} • ${platform.currency} (${pricingModelLabel(platform.pricingModel)})`;
+    text.textContent = `${platform.name} (${pricingModelLabel(platform.pricingModel)})`;
 
     label.appendChild(input);
     label.appendChild(text);
@@ -288,16 +432,15 @@ function renderPlatformCheckboxes() {
 
 function renderPlatformTable() {
   ui.platformTableBody.innerHTML = "";
+  const currency = state.selectedMarket.currency;
 
   state.platforms.forEach((platform) => {
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${platform.name}</td>
-      <td>${platform.country}</td>
-      <td>${platform.currency}</td>
       <td>${pricingModelLabel(platform.pricingModel)}</td>
-      <td>${formatCurrency(Number(platform.rate), platform.currency)}</td>
-      <td>${formatCurrency(Number(platform.minCharge || 0), platform.currency)}</td>
+      <td>${formatCurrency(Number(platform.rate), currency)}</td>
+      <td>${formatCurrency(Number(platform.minCharge || 0), currency)}</td>
       <td>${platform.notes || "-"}</td>
       <td>
         <div class="table-action">
@@ -310,198 +453,33 @@ function renderPlatformTable() {
   });
 }
 
-function resetPlatformForm() {
-  ui.editingId.value = "";
-  ui.platformForm.reset();
-  ui.currency.value = "USD";
-  ui.minCharge.value = 0;
-}
-
-function updateAllPlatformViews() {
-  renderAnalysisFilters();
+function renderAllPlatformViews() {
   renderPlatformCheckboxes();
   renderPlatformTable();
 }
 
-function analyzeBudget(event) {
-  event.preventDefault();
-
-  const start = new Date(ui.startDate.value);
-  const end = new Date(ui.endDate.value);
-
-  if (!ui.startDate.value || !ui.endDate.value || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    alert("Please select valid start and end dates.");
-    return;
-  }
-
-  if (end < start) {
-    alert("End date must be after start date.");
-    return;
-  }
-
-  const selectedIds = [...ui.checkboxList.querySelectorAll("input:checked")].map((item) => item.value);
-  if (selectedIds.length === 0) {
-    alert("Select at least one platform.");
-    return;
-  }
-
-  const oneDay = 24 * 60 * 60 * 1000;
-  const days = Math.floor((end - start) / oneDay) + 1;
-
-  const selectedPlatforms = state.platforms.filter((item) => selectedIds.includes(item.id));
-  const breakdown = selectedPlatforms.map((platform) => {
-    const calc = calculateCost(platform, days);
-    return {
-      ...platform,
-      units: calc.units,
-      cost: calc.cost,
-    };
-  });
-
-  const total = breakdown.reduce((sum, current) => sum + current.cost, 0);
-  const currencies = uniqueValues(breakdown.map((item) => item.currency));
-  const campaignName = ui.campaignName.value.trim() || "Untitled Campaign";
-
-  state.lastAnalysis = {
-    campaignName,
-    startDate: ui.startDate.value,
-    endDate: ui.endDate.value,
-    days,
-    breakdown,
-    total,
-    currencies,
-  };
-
-  renderResults({ days, breakdown, total, currencies });
-}
-
-function renderResults({ days, breakdown, total, currencies }) {
-  ui.emptyState.classList.add("hidden");
-  ui.results.classList.remove("hidden");
-
-  if (currencies.length === 1) {
-    ui.totalBudget.textContent = formatCurrency(total, currencies[0]);
-    ui.totalBudgetMeta.textContent = currencies[0];
-  } else {
-    ui.totalBudget.textContent = `${total.toFixed(2)} (mixed)`;
-    ui.totalBudgetMeta.textContent = `Mixed currencies: ${currencies.join(", ")}`;
-  }
-
-  ui.durationDays.textContent = `${days} day${days > 1 ? "s" : ""}`;
-  ui.platformCount.textContent = String(breakdown.length);
-  ui.exportCsvBtn.disabled = false;
-  ui.exportPdfBtn.disabled = false;
-  ui.copyReportBtn.disabled = false;
-  ui.copyTableBtn.disabled = false;
-  ui.copyChartBtn.disabled = false;
-  ui.copyStatus.textContent = "";
-
-  ui.breakdownBody.innerHTML = "";
-  breakdown.forEach((item) => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${item.name}</td>
-      <td>${item.country}</td>
-      <td>${item.currency}</td>
-      <td>${pricingModelLabel(item.pricingModel)}</td>
-      <td>${formatCurrency(Number(item.rate), item.currency)}</td>
-      <td>${item.units}</td>
-      <td>${formatCurrency(item.cost, item.currency)}</td>
-    `;
-    ui.breakdownBody.appendChild(row);
-  });
-
-  renderBarChart(breakdown, total);
-  renderDonut(breakdown, total);
-}
-
-function renderBarChart(breakdown, total) {
-  ui.barChart.innerHTML = "";
-  const sortedBreakdown = [...breakdown].sort((a, b) => b.cost - a.cost);
-
-  sortedBreakdown.forEach((item, index) => {
-    const percentage = total === 0 ? 0 : (item.cost / total) * 100;
-    const row = document.createElement("div");
-    row.className = "bar-row";
-    row.innerHTML = `
-      <div class="bar-label">
-        <span>${item.name}</span>
-        <span>${formatCurrency(item.cost, item.currency)} (${percentage.toFixed(1)}%)</span>
-      </div>
-      <div class="bar-track">
-        <div class="bar-fill" style="width: ${percentage}%; background: linear-gradient(90deg, ${colors[index % colors.length]}, ${colors[(index + 2) % colors.length]});"></div>
-      </div>
-    `;
-    ui.barChart.appendChild(row);
-  });
-}
-
-function renderDonut(breakdown, total) {
-  const segments = [];
-  let current = 0;
-
-  breakdown.forEach((item, index) => {
-    const percent = total === 0 ? 0 : (item.cost / total) * 100;
-    const next = current + percent;
-    segments.push(`${colors[index % colors.length]} ${current}% ${next}%`);
-    current = next;
-  });
-
-  ui.donut.style.background = `conic-gradient(${segments.join(",")})`;
-  if (ui.donutCenter) {
-    ui.donutCenter.innerHTML = `<strong>${breakdown.length}</strong><span>platforms</span>`;
-  }
-  ui.donutLegend.innerHTML = "";
-
-  breakdown.forEach((item, index) => {
-    const li = document.createElement("li");
-    const percent = total === 0 ? 0 : (item.cost / total) * 100;
-    li.innerHTML = `
-      <span><i class="legend-dot" style="background:${colors[index % colors.length]}"></i>${item.name}</span>
-      <span>${percent.toFixed(1)}%</span>
-    `;
-    ui.donutLegend.appendChild(li);
-  });
-}
-
-function csvEscape(value) {
-  const text = String(value ?? "");
-  if (text.includes(",") || text.includes("\n") || text.includes('"')) {
-    return `"${text.replaceAll('"', '""')}"`;
-  }
-  return text;
-}
-
-function setCopyStatus(message, isError = false) {
-  ui.copyStatus.textContent = message;
-  ui.copyStatus.style.color = isError ? "#fca5a5" : "#cbd5e1";
+function resetPlatformForm() {
+  ui.editingId.value = "";
+  ui.platformForm.reset();
+  ui.minCharge.value = 0;
 }
 
 function buildReportText() {
   if (!state.lastAnalysis) return "";
 
-  const { campaignName, startDate, endDate, days, total, breakdown, currencies } = state.lastAnalysis;
-  const totalText =
-    currencies.length === 1
-      ? formatCurrency(total, currencies[0])
-      : `${total.toFixed(2)} (mixed: ${currencies.join("/")})`;
-
+  const { campaignName, startDate, endDate, days, total, breakdown, currency, country } = state.lastAnalysis;
   const lines = [
-    `Ad Budget Report`,
+    "Ad Budget Report",
+    `Market: ${country} (${currency})`,
     `Campaign: ${campaignName}`,
     `Duration: ${formatDate(startDate)} to ${formatDate(endDate)} (${days} days)`,
-    `Total: ${totalText}`,
+    `Total: ${formatCurrency(total, currency)}`,
     "",
     "Breakdown:",
   ];
 
   breakdown.forEach((item) => {
-    lines.push(
-      `- ${item.name} (${item.country}, ${item.currency}, ${pricingModelLabel(item.pricingModel)}): ${formatCurrency(
-        item.cost,
-        item.currency
-      )}`
-    );
+    lines.push(`- ${item.name} (${pricingModelLabel(item.pricingModel)}): ${formatCurrency(item.cost, currency)}`);
   });
 
   return lines.join("\n");
@@ -510,15 +488,14 @@ function buildReportText() {
 function buildTableText() {
   if (!state.lastAnalysis) return "";
 
-  const header = ["Platform", "Country", "Currency", "Model", "Rate", "Units", "Estimated Cost"];
+  const currency = state.lastAnalysis.currency;
+  const header = ["Platform", "Model", "Rate", "Units", "Estimated Cost"];
   const rows = state.lastAnalysis.breakdown.map((item) => [
     item.name,
-    item.country,
-    item.currency,
     pricingModelLabel(item.pricingModel),
-    formatCurrency(Number(item.rate), item.currency),
+    formatCurrency(Number(item.rate), currency),
     String(item.units),
-    formatCurrency(item.cost, item.currency),
+    formatCurrency(item.cost, currency),
   ]);
 
   return [header, ...rows].map((row) => row.join("\t")).join("\n");
@@ -570,7 +547,7 @@ function renderChartCanvas(analysis) {
 
   ctx.fillStyle = "#cbd5e1";
   ctx.font = "500 18px Inter, Arial, sans-serif";
-  const meta = `${analysis.campaignName} • ${formatDate(analysis.startDate)} to ${formatDate(analysis.endDate)}`;
+  const meta = `${analysis.campaignName} • ${analysis.country} (${analysis.currency})`;
   ctx.fillText(meta, padding, 84);
 
   const sorted = [...analysis.breakdown].sort((a, b) => b.cost - a.cost);
@@ -600,7 +577,7 @@ function renderChartCanvas(analysis) {
     ctx.fillStyle = "#cbd5e1";
     ctx.font = "500 14px Inter, Arial, sans-serif";
     ctx.fillText(
-      `${formatCurrency(item.cost, item.currency)} (${((item.cost / analysis.total) * 100).toFixed(1)}%)`,
+      `${formatCurrency(item.cost, analysis.currency)} (${((item.cost / analysis.total) * 100).toFixed(1)}%)`,
       padding + 220,
       y + 42
     );
@@ -608,11 +585,7 @@ function renderChartCanvas(analysis) {
 
   ctx.fillStyle = "#94a3b8";
   ctx.font = "500 16px Inter, Arial, sans-serif";
-  const totalText =
-    analysis.currencies.length === 1
-      ? formatCurrency(analysis.total, analysis.currencies[0])
-      : `${analysis.total.toFixed(2)} (mixed: ${analysis.currencies.join("/")})`;
-  ctx.fillText(`Total Budget: ${totalText}`, padding, height - 32);
+  ctx.fillText(`Total Budget: ${formatCurrency(analysis.total, analysis.currency)}`, padding, height - 32);
 
   return canvas;
 }
@@ -624,7 +597,6 @@ async function copyChartImage() {
   }
 
   const canvas = renderChartCanvas(state.lastAnalysis);
-
   if (!navigator.clipboard || typeof ClipboardItem === "undefined") {
     setCopyStatus("Image clipboard not supported here. Use Export PDF as fallback.", true);
     return;
@@ -644,32 +616,170 @@ async function copyChartImage() {
   }
 }
 
+function renderBarChart(breakdown, total) {
+  ui.barChart.innerHTML = "";
+  const sortedBreakdown = [...breakdown].sort((a, b) => b.cost - a.cost);
+
+  sortedBreakdown.forEach((item, index) => {
+    const percentage = total === 0 ? 0 : (item.cost / total) * 100;
+    const row = document.createElement("div");
+    row.className = "bar-row";
+    row.innerHTML = `
+      <div class="bar-label">
+        <span>${item.name}</span>
+        <span>${formatCurrency(item.cost, state.selectedMarket.currency)} (${percentage.toFixed(1)}%)</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width: ${percentage}%; background: linear-gradient(90deg, ${colors[index % colors.length]}, ${colors[(
+      index + 2
+    ) % colors.length]});"></div>
+      </div>
+    `;
+    ui.barChart.appendChild(row);
+  });
+}
+
+function renderDonut(breakdown, total) {
+  const segments = [];
+  let current = 0;
+
+  breakdown.forEach((item, index) => {
+    const percent = total === 0 ? 0 : (item.cost / total) * 100;
+    const next = current + percent;
+    segments.push(`${colors[index % colors.length]} ${current}% ${next}%`);
+    current = next;
+  });
+
+  ui.donut.style.background = `conic-gradient(${segments.join(",")})`;
+  ui.donutCenter.innerHTML = `<strong>${breakdown.length}</strong><span>platforms</span>`;
+  ui.donutLegend.innerHTML = "";
+
+  breakdown.forEach((item, index) => {
+    const li = document.createElement("li");
+    const percent = total === 0 ? 0 : (item.cost / total) * 100;
+    li.innerHTML = `
+      <span><i class="legend-dot" style="background:${colors[index % colors.length]}"></i>${item.name}</span>
+      <span>${percent.toFixed(1)}%</span>
+    `;
+    ui.donutLegend.appendChild(li);
+  });
+}
+
+function renderResults({ days, breakdown, total }) {
+  ui.emptyState.classList.add("hidden");
+  ui.results.classList.remove("hidden");
+
+  const currency = state.selectedMarket.currency;
+  ui.totalBudget.textContent = formatCurrency(total, currency);
+  ui.totalBudgetMeta.textContent = `${state.selectedMarket.country} • ${currency}`;
+  ui.durationDays.textContent = `${days} day${days > 1 ? "s" : ""}`;
+  ui.platformCount.textContent = String(breakdown.length);
+
+  ui.exportCsvBtn.disabled = false;
+  ui.exportPdfBtn.disabled = false;
+  ui.copyReportBtn.disabled = false;
+  ui.copyTableBtn.disabled = false;
+  ui.copyChartBtn.disabled = false;
+  ui.copyStatus.textContent = "";
+
+  ui.breakdownBody.innerHTML = "";
+  breakdown.forEach((item) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${item.name}</td>
+      <td>${pricingModelLabel(item.pricingModel)}</td>
+      <td>${formatCurrency(Number(item.rate), currency)}</td>
+      <td>${item.units}</td>
+      <td>${formatCurrency(item.cost, currency)}</td>
+    `;
+    ui.breakdownBody.appendChild(row);
+  });
+
+  renderBarChart(breakdown, total);
+  renderDonut(breakdown, total);
+}
+
+function analyzeBudget(event) {
+  event.preventDefault();
+
+  const start = new Date(ui.startDate.value);
+  const end = new Date(ui.endDate.value);
+
+  if (!ui.startDate.value || !ui.endDate.value || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    alert("Please select valid start and end dates.");
+    return;
+  }
+
+  if (end < start) {
+    alert("End date must be after start date.");
+    return;
+  }
+
+  const selectedIds = [...ui.checkboxList.querySelectorAll("input:checked")].map((item) => item.value);
+  if (selectedIds.length === 0) {
+    alert("Select at least one platform.");
+    return;
+  }
+
+  const oneDay = 24 * 60 * 60 * 1000;
+  const days = Math.floor((end - start) / oneDay) + 1;
+
+  const selectedPlatforms = state.platforms.filter((item) => selectedIds.includes(item.id));
+  const breakdown = selectedPlatforms.map((platform) => {
+    const calc = calculateCost(platform, days);
+    return {
+      ...platform,
+      units: calc.units,
+      cost: calc.cost,
+    };
+  });
+
+  const total = breakdown.reduce((sum, current) => sum + current.cost, 0);
+  const campaignName = ui.campaignName.value.trim() || "Untitled Campaign";
+
+  state.lastAnalysis = {
+    campaignName,
+    startDate: ui.startDate.value,
+    endDate: ui.endDate.value,
+    days,
+    breakdown,
+    total,
+    country: state.selectedMarket.country,
+    currency: state.selectedMarket.currency,
+  };
+
+  renderResults({ days, breakdown, total });
+}
+
+function csvEscape(value) {
+  const text = String(value ?? "");
+  if (text.includes(",") || text.includes("\n") || text.includes('"')) {
+    return `"${text.replaceAll('"', '""')}"`;
+  }
+  return text;
+}
+
 function exportCsv() {
   if (!state.lastAnalysis) {
     alert("Run an analysis before exporting.");
     return;
   }
 
-  const { campaignName, startDate, endDate, days, total, breakdown, currencies } = state.lastAnalysis;
-  const totalText =
-    currencies.length === 1
-      ? formatCurrency(total, currencies[0])
-      : `${total.toFixed(2)} (mixed: ${currencies.join("/")})`;
+  const { campaignName, startDate, endDate, days, total, breakdown, country, currency } = state.lastAnalysis;
 
   const headerRows = [
     ["Campaign", campaignName],
+    ["Market", `${country} (${currency})`],
     ["Start Date", formatDate(startDate)],
     ["End Date", formatDate(endDate)],
     ["Duration (Days)", days],
-    ["Total Budget", totalText],
+    ["Total Budget", formatCurrency(total, currency)],
     [],
-    ["Platform", "Country", "Currency", "Pricing Model", "Rate", "Units", "Estimated Cost", "Notes"],
+    ["Platform", "Pricing Model", "Rate", "Units", "Estimated Cost", "Notes"],
   ];
 
   const rows = breakdown.map((item) => [
     item.name,
-    item.country,
-    item.currency,
     pricingModelLabel(item.pricingModel),
     Number(item.rate).toFixed(2),
     item.units,
@@ -695,23 +805,16 @@ function exportPdf() {
     return;
   }
 
-  const { campaignName, startDate, endDate, days, total, breakdown, currencies } = state.lastAnalysis;
-  const totalText =
-    currencies.length === 1
-      ? formatCurrency(total, currencies[0])
-      : `${total.toFixed(2)} (mixed: ${currencies.join("/")})`;
-
+  const { campaignName, startDate, endDate, days, total, breakdown, country, currency } = state.lastAnalysis;
   const tableRows = breakdown
     .map(
       (item) => `
       <tr>
         <td>${item.name}</td>
-        <td>${item.country}</td>
-        <td>${item.currency}</td>
         <td>${pricingModelLabel(item.pricingModel)}</td>
-        <td>${formatCurrency(Number(item.rate), item.currency)}</td>
+        <td>${formatCurrency(Number(item.rate), currency)}</td>
         <td>${item.units}</td>
-        <td>${formatCurrency(item.cost, item.currency)}</td>
+        <td>${formatCurrency(item.cost, currency)}</td>
       </tr>
     `
     )
@@ -740,13 +843,14 @@ function exportPdf() {
         <h1>Ad Budget Report</h1>
         <div class="meta">
           <div><strong>Campaign:</strong> ${campaignName}</div>
+          <div><strong>Market:</strong> ${country} (${currency})</div>
           <div><strong>Duration:</strong> ${formatDate(startDate)} to ${formatDate(endDate)} (${days} days)</div>
-          <div><strong>Total:</strong> ${totalText}</div>
+          <div><strong>Total:</strong> ${formatCurrency(total, currency)}</div>
           <div><strong>Generated:</strong> ${formatDate(new Date().toISOString())}</div>
         </div>
 
         <div class="summary">
-          <div class="card"><p>Total Budget</p><h3>${totalText}</h3></div>
+          <div class="card"><p>Total Budget</p><h3>${formatCurrency(total, currency)}</h3></div>
           <div class="card"><p>Platforms</p><h3>${breakdown.length}</h3></div>
           <div class="card"><p>Duration</p><h3>${days} day${days > 1 ? "s" : ""}</h3></div>
         </div>
@@ -755,8 +859,6 @@ function exportPdf() {
           <thead>
             <tr>
               <th>Platform</th>
-              <th>Country</th>
-              <th>Currency</th>
               <th>Pricing Model</th>
               <th>Rate</th>
               <th>Units</th>
@@ -790,15 +892,13 @@ function onPlatformFormSubmit(event) {
   const payload = {
     id: ui.editingId.value || crypto.randomUUID(),
     name: ui.platformName.value.trim(),
-    country: ui.country.value.trim(),
-    currency: ui.currency.value,
     pricingModel: ui.pricingModel.value,
     rate: Number(ui.rate.value),
     minCharge: Number(ui.minCharge.value || 0),
     notes: ui.notes.value.trim(),
   };
 
-  if (!payload.name || !payload.country || !payload.currency || payload.rate < 0 || payload.minCharge < 0) {
+  if (!payload.name || payload.rate < 0 || payload.minCharge < 0) {
     alert("Please provide valid platform values.");
     return;
   }
@@ -810,8 +910,8 @@ function onPlatformFormSubmit(event) {
     state.platforms.push(payload);
   }
 
-  persistPlatforms();
-  updateAllPlatformViews();
+  saveCurrentMarketPlatforms();
+  renderAllPlatformViews();
   resetPlatformForm();
 }
 
@@ -826,16 +926,14 @@ function onTableAction(event) {
 
   if (action === "delete") {
     state.platforms = state.platforms.filter((item) => item.id !== id);
-    persistPlatforms();
-    updateAllPlatformViews();
+    saveCurrentMarketPlatforms();
+    renderAllPlatformViews();
     return;
   }
 
   if (action === "edit") {
     ui.editingId.value = platform.id;
     ui.platformName.value = platform.name;
-    ui.country.value = platform.country;
-    ui.currency.value = platform.currency;
     ui.pricingModel.value = platform.pricingModel;
     ui.rate.value = platform.rate;
     ui.minCharge.value = platform.minCharge;
@@ -848,7 +946,6 @@ function setupTabs() {
     button.addEventListener("click", () => {
       ui.tabs.forEach((item) => item.classList.remove("active"));
       ui.panels.forEach((item) => item.classList.remove("active"));
-
       button.classList.add("active");
       const panel = document.getElementById(button.dataset.tab);
       panel?.classList.add("active");
@@ -858,41 +955,87 @@ function setupTabs() {
 
 function setupResetDefaults() {
   ui.resetDefaultsBtn.addEventListener("click", () => {
-    const confirmed = confirm("Reset all configured platforms to default values?");
+    const confirmed = confirm("Reset configured platforms for current market to default values?");
     if (!confirmed) return;
 
-    state.platforms = DEFAULT_PLATFORMS.map((item) => ({ ...item }));
-    persistPlatforms();
-    updateAllPlatformViews();
+    const key = marketKey(state.selectedMarket.country, state.selectedMarket.currency);
+    state.platforms = (DEFAULT_MARKET_RATE_CARDS[key] || []).map((item) => ({ ...item, id: crypto.randomUUID() }));
+    saveCurrentMarketPlatforms();
+    renderAllPlatformViews();
     resetPlatformForm();
   });
 }
 
-function setupAnalysisFilters() {
-  ui.analysisCountry.addEventListener("change", renderPlatformCheckboxes);
-  ui.analysisCurrency.addEventListener("change", renderPlatformCheckboxes);
+function onMarketCountryChange() {
+  const country = ui.marketCountry.value;
+  const currency = MARKET_CURRENCY_MAP[country] || ui.marketCurrency.value || "GBP";
+
+  state.selectedMarket = { country, currency };
+  persistSelectedMarket();
+
+  if (ui.marketCurrency.value !== currency) {
+    ui.marketCurrency.value = currency;
+  }
+
+  loadCurrentMarketPlatforms();
+  renderAllPlatformViews();
+  state.lastAnalysis = null;
+  ui.results.classList.add("hidden");
+  ui.emptyState.classList.remove("hidden");
+}
+
+function onMarketCurrencyChange() {
+  const country = ui.marketCountry.value;
+  const currency = ui.marketCurrency.value;
+
+  const previousCountry = state.selectedMarket.country;
+  const previousCurrency = state.selectedMarket.currency;
+  const previousKey = marketKey(previousCountry, previousCurrency);
+  const nextKey = marketKey(country, currency);
+
+  const existingNext = state.platformsByMarket[nextKey];
+  if ((!existingNext || existingNext.length === 0) && previousKey !== nextKey && state.platformsByMarket[previousKey]) {
+    state.platformsByMarket[nextKey] = state.platformsByMarket[previousKey].map((item) => ({
+      ...item,
+      id: crypto.randomUUID(),
+      rate: Number(convertAmount(item.rate, previousCurrency, currency).toFixed(2)),
+      minCharge: Number(convertAmount(item.minCharge || 0, previousCurrency, currency).toFixed(2)),
+      notes: `${item.notes ? `${item.notes} • ` : ""}Converted from ${previousCurrency} to ${currency}`,
+    }));
+  }
+
+  state.selectedMarket = { country, currency };
+  persistSelectedMarket();
+  persistPlatformsByMarket();
+  loadCurrentMarketPlatforms();
+  renderAllPlatformViews();
+  state.lastAnalysis = null;
+  ui.results.classList.add("hidden");
+  ui.emptyState.classList.remove("hidden");
+}
+
+function setupMarketSelection() {
+  ui.marketCountry.addEventListener("change", onMarketCountryChange);
+  ui.marketCurrency.addEventListener("change", onMarketCurrencyChange);
 }
 
 function openDatePicker(targetId) {
   const input = document.getElementById(targetId);
   if (!input) return;
-
   if (typeof input.showPicker === "function") {
     input.showPicker();
     return;
   }
-
   input.focus();
+  input.click();
 }
 
 function setupDatePickerBehavior() {
   [ui.startDate, ui.endDate].forEach((input) => {
-    input.addEventListener("keydown", (event) => {
-      event.preventDefault();
-    });
-
     input.addEventListener("click", () => {
-      openDatePicker(input.id);
+      if (typeof input.showPicker === "function") {
+        input.showPicker();
+      }
     });
   });
 
@@ -905,11 +1048,22 @@ function setupDatePickerBehavior() {
 }
 
 function initialize() {
-  state.platforms = readPlatforms();
-  updateAllPlatformViews();
+  migrateLegacyIfNeeded();
+  state.selectedMarket = readSelectedMarket();
+  state.platformsByMarket = readPlatformsByMarket();
+
+  if (!MARKET_CURRENCY_MAP[state.selectedMarket.country]) {
+    state.selectedMarket = { ...DEFAULT_SELECTED_MARKET };
+  }
+
+  refreshMarketUI();
+  loadCurrentMarketPlatforms();
+  renderAllPlatformViews();
+
   setupTabs();
-  setupAnalysisFilters();
   setupDatePickerBehavior();
+  setupMarketSelection();
+  setupResetDefaults();
 
   ui.analysisForm.addEventListener("submit", analyzeBudget);
   ui.platformForm.addEventListener("submit", onPlatformFormSubmit);
@@ -920,7 +1074,6 @@ function initialize() {
   ui.copyReportBtn.addEventListener("click", copyReportText);
   ui.copyTableBtn.addEventListener("click", copyTableText);
   ui.copyChartBtn.addEventListener("click", copyChartImage);
-  setupResetDefaults();
 }
 
 initialize();

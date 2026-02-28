@@ -30,6 +30,35 @@
       </nav>
 
       <main>
+        <section class="panel market-panel">
+          <h2>Market Settings</h2>
+          <p class="subtitle">This applies to the entire website (analysis + configuration + exports).</p>
+          <div class="form-grid compact">
+            <label>
+              Country Market
+              <select id="marketCountry">
+                <option value="United Kingdom">United Kingdom</option>
+                <option value="United States">United States</option>
+                <option value="India">India</option>
+                <option value="Australia">Australia</option>
+                <option value="Singapore">Singapore</option>
+                <option value="United Arab Emirates">United Arab Emirates</option>
+              </select>
+            </label>
+            <label>
+              Currency
+              <select id="marketCurrency">
+                <option value="GBP">GBP</option>
+                <option value="USD">USD</option>
+                <option value="INR">INR</option>
+                <option value="AUD">AUD</option>
+                <option value="SGD">SGD</option>
+                <option value="AED">AED</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
         <section id="analyzer" class="tab-panel active">
           <div class="panel">
             <h2>Campaign Inputs</h2>
@@ -41,28 +70,16 @@
               <label>
                 Start date
                 <div class="date-input-wrap">
-                  <input type="date" id="startDate" required readonly />
+                  <input type="date" id="startDate" required />
                   <button type="button" class="small-btn date-btn" data-date-target="startDate" aria-label="Open start date calendar">📅</button>
                 </div>
               </label>
               <label>
                 End date
                 <div class="date-input-wrap">
-                  <input type="date" id="endDate" required readonly />
+                  <input type="date" id="endDate" required />
                   <button type="button" class="small-btn date-btn" data-date-target="endDate" aria-label="Open end date calendar">📅</button>
                 </div>
-              </label>
-              <label>
-                Country filter
-                <select id="analysisCountry">
-                  <option value="all">All Countries</option>
-                </select>
-              </label>
-              <label>
-                Currency filter
-                <select id="analysisCurrency">
-                  <option value="all">All Currencies</option>
-                </select>
               </label>
 
               <fieldset class="platform-selector">
@@ -128,8 +145,6 @@
                   <thead>
                     <tr>
                       <th>Platform</th>
-                      <th>Country</th>
-                      <th>Currency</th>
                       <th>Pricing Model</th>
                       <th>Rate</th>
                       <th>Units</th>
@@ -169,23 +184,6 @@
                 <input type="number" id="rate" min="0" step="0.01" required />
               </label>
               <label>
-                Country
-                <input type="text" id="country" placeholder="India" required />
-              </label>
-              <label>
-                Currency
-                <select id="currency" required>
-                  <option value="USD">USD</option>
-                  <option value="INR">INR</option>
-                  <option value="GBP">GBP</option>
-                  <option value="EUR">EUR</option>
-                  <option value="AUD">AUD</option>
-                  <option value="CAD">CAD</option>
-                  <option value="SGD">SGD</option>
-                  <option value="AED">AED</option>
-                </select>
-              </label>
-              <label>
                 Minimum Charge
                 <input type="number" id="minCharge" min="0" step="0.01" value="0" />
               </label>
@@ -206,8 +204,6 @@
                 <thead>
                   <tr>
                     <th>Platform</th>
-                    <th>Country</th>
-                    <th>Currency</th>
                     <th>Model</th>
                     <th>Rate</th>
                     <th>Minimum</th>

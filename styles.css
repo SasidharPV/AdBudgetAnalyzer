@@ -86,6 +86,10 @@ h1 {
   margin-bottom: 16px;
 }
 
+.market-panel {
+  border-color: #2563eb;
+}
+
 .form-grid {
   display: grid;
   gap: 12px;
