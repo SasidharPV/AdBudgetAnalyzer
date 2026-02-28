@@ -29,6 +29,14 @@ const DEFAULT_MARKET_RATE_CARDS = {
   "United Kingdom|GBP": [
     {
       id: crypto.randomUUID(),
+      name: "Indeed UK",
+      pricingModel: "perDay",
+      rate: 15,
+      minCharge: 0,
+      notes: "Sponsored job daily budget",
+    },
+    {
+      id: crypto.randomUUID(),
       name: "Reed",
       pricingModel: "perPost",
       rate: 89,
@@ -59,6 +67,14 @@ const DEFAULT_MARKET_RATE_CARDS = {
       minCharge: 0,
       notes: "UK sponsored daily budget estimate",
     },
+    {
+      id: crypto.randomUUID(),
+      name: "Guardian Jobs",
+      pricingModel: "perPost",
+      rate: 295,
+      minCharge: 0,
+      notes: "4-week listing",
+    },
   ],
   "United States|USD": [
     {
@@ -85,6 +101,30 @@ const DEFAULT_MARKET_RATE_CARDS = {
       minCharge: 0,
       notes: "Standard single post",
     },
+    {
+      id: crypto.randomUUID(),
+      name: "Glassdoor",
+      pricingModel: "perPost",
+      rate: 199,
+      minCharge: 0,
+      notes: "Job listing + employer branding",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Monster",
+      pricingModel: "perPost",
+      rate: 375,
+      minCharge: 0,
+      notes: "60-day job posting",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "CareerBuilder",
+      pricingModel: "perPost",
+      rate: 219,
+      minCharge: 0,
+      notes: "30-day posting",
+    },
   ],
   "India|INR": [
     {
@@ -97,7 +137,15 @@ const DEFAULT_MARKET_RATE_CARDS = {
     },
     {
       id: crypto.randomUUID(),
-      name: "Foundit",
+      name: "Indeed India",
+      pricingModel: "perDay",
+      rate: 300,
+      minCharge: 0,
+      notes: "Sponsored daily budget",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Foundit (Monster)",
       pricingModel: "perWeek",
       rate: 3800,
       minCharge: 0,
@@ -111,6 +159,22 @@ const DEFAULT_MARKET_RATE_CARDS = {
       minCharge: 0,
       notes: "Single listing package",
     },
+    {
+      id: crypto.randomUUID(),
+      name: "LinkedIn India",
+      pricingModel: "perDay",
+      rate: 800,
+      minCharge: 0,
+      notes: "Sponsored job daily",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Shine",
+      pricingModel: "perPost",
+      rate: 1999,
+      minCharge: 0,
+      notes: "Standard job posting",
+    },
   ],
   "Australia|AUD": [
     {
@@ -123,11 +187,35 @@ const DEFAULT_MARKET_RATE_CARDS = {
     },
     {
       id: crypto.randomUUID(),
+      name: "Indeed Australia",
+      pricingModel: "perDay",
+      rate: 25,
+      minCharge: 0,
+      notes: "Sponsored daily budget",
+    },
+    {
+      id: crypto.randomUUID(),
       name: "LinkedIn Jobs",
       pricingModel: "perDay",
       rate: 58,
       minCharge: 0,
       notes: "Sponsored daily budget estimate",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Jora",
+      pricingModel: "perPost",
+      rate: 0,
+      minCharge: 0,
+      notes: "Free job posting aggregator",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "CareerOne",
+      pricingModel: "perPost",
+      rate: 195,
+      minCharge: 0,
+      notes: "30-day posting",
     },
   ],
   "Singapore|SGD": [
@@ -145,7 +233,31 @@ const DEFAULT_MARKET_RATE_CARDS = {
       pricingModel: "perPost",
       rate: 0,
       minCharge: 0,
-      notes: "Government portal (can be free depending on listing)",
+      notes: "Government portal (free for locals)",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "LinkedIn Singapore",
+      pricingModel: "perDay",
+      rate: 40,
+      minCharge: 0,
+      notes: "Sponsored daily budget",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Indeed Singapore",
+      pricingModel: "perDay",
+      rate: 20,
+      minCharge: 0,
+      notes: "Sponsored daily budget",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "FastJobs",
+      pricingModel: "perPost",
+      rate: 99,
+      minCharge: 0,
+      notes: "Hourly/part-time focus",
     },
   ],
   "United Arab Emirates|AED": [
@@ -164,6 +276,30 @@ const DEFAULT_MARKET_RATE_CARDS = {
       rate: 300,
       minCharge: 0,
       notes: "Standard job post",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "GulfTalent",
+      pricingModel: "perPost",
+      rate: 500,
+      minCharge: 0,
+      notes: "Premium Gulf job board",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "LinkedIn UAE",
+      pricingModel: "perDay",
+      rate: 75,
+      minCharge: 0,
+      notes: "Sponsored daily budget",
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Indeed UAE",
+      pricingModel: "perDay",
+      rate: 50,
+      minCharge: 0,
+      notes: "Sponsored daily budget",
     },
   ],
 };
@@ -214,7 +350,11 @@ const ui = {
   copyReportBtn: document.getElementById("copyReportBtn"),
   copyTableBtn: document.getElementById("copyTableBtn"),
   copyChartBtn: document.getElementById("copyChartBtn"),
-  copyStatus: document.getElementById("copyStatus"),
+  toastContainer: document.getElementById("toastContainer"),
+  selectAllBtn: document.getElementById("selectAllBtn"),
+  selectNoneBtn: document.getElementById("selectNoneBtn"),
+  durationPresets: document.querySelectorAll(".preset-btn[data-days]"),
+  durationMeta: document.getElementById("durationMeta"),
 };
 
 function marketKey(country, currency) {
@@ -395,9 +535,22 @@ function saveCurrentMarketPlatforms() {
   persistPlatformsByMarket();
 }
 
+function showToast(message, type = "info") {
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  ui.toastContainer.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(100px)";
+    toast.style.transition = "all 0.3s ease";
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
 function setCopyStatus(message, isError = false) {
-  ui.copyStatus.textContent = message;
-  ui.copyStatus.style.color = isError ? "#fca5a5" : "#cbd5e1";
+  showToast(message, isError ? "error" : "success");
 }
 
 function refreshMarketUI() {
@@ -503,7 +656,7 @@ function buildTableText() {
 
 async function copyReportText() {
   if (!state.lastAnalysis) {
-    alert("Run an analysis before copying.");
+    showToast("Run an analysis before copying.", "error");
     return;
   }
 
@@ -517,7 +670,7 @@ async function copyReportText() {
 
 async function copyTableText() {
   if (!state.lastAnalysis) {
-    alert("Run an analysis before copying.");
+    showToast("Run an analysis before copying.", "error");
     return;
   }
 
@@ -592,7 +745,7 @@ function renderChartCanvas(analysis) {
 
 async function copyChartImage() {
   if (!state.lastAnalysis) {
-    alert("Run an analysis before copying.");
+    showToast("Run an analysis before copying.", "error");
     return;
   }
 
@@ -675,12 +828,16 @@ function renderResults({ days, breakdown, total }) {
   ui.durationDays.textContent = `${days} day${days > 1 ? "s" : ""}`;
   ui.platformCount.textContent = String(breakdown.length);
 
+  // Show date range in duration meta
+  if (state.lastAnalysis) {
+    ui.durationMeta.textContent = `${formatDate(state.lastAnalysis.startDate)} → ${formatDate(state.lastAnalysis.endDate)}`;
+  }
+
   ui.exportCsvBtn.disabled = false;
   ui.exportPdfBtn.disabled = false;
   ui.copyReportBtn.disabled = false;
   ui.copyTableBtn.disabled = false;
   ui.copyChartBtn.disabled = false;
-  ui.copyStatus.textContent = "";
 
   ui.breakdownBody.innerHTML = "";
   breakdown.forEach((item) => {
@@ -706,18 +863,18 @@ function analyzeBudget(event) {
   const end = new Date(ui.endDate.value);
 
   if (!ui.startDate.value || !ui.endDate.value || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    alert("Please select valid start and end dates.");
+    showToast("Please select valid start and end dates.", "error");
     return;
   }
 
   if (end < start) {
-    alert("End date must be after start date.");
+    showToast("End date must be after start date.", "error");
     return;
   }
 
   const selectedIds = [...ui.checkboxList.querySelectorAll("input:checked")].map((item) => item.value);
   if (selectedIds.length === 0) {
-    alert("Select at least one platform.");
+    showToast("Select at least one platform.", "error");
     return;
   }
 
@@ -749,6 +906,7 @@ function analyzeBudget(event) {
   };
 
   renderResults({ days, breakdown, total });
+  showToast(`Budget analysis complete: ${formatCurrency(total, state.selectedMarket.currency)}`, "success");
 }
 
 function csvEscape(value) {
@@ -761,7 +919,7 @@ function csvEscape(value) {
 
 function exportCsv() {
   if (!state.lastAnalysis) {
-    alert("Run an analysis before exporting.");
+    showToast("Run an analysis before exporting.", "error");
     return;
   }
 
@@ -797,11 +955,13 @@ function exportCsv() {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+  
+  showToast("CSV exported successfully!", "success");
 }
 
 function exportPdf() {
   if (!state.lastAnalysis) {
-    alert("Run an analysis before exporting.");
+    showToast("Run an analysis before exporting.", "error");
     return;
   }
 
@@ -828,15 +988,16 @@ function exportPdf() {
         <title>Ad Budget Report</title>
         <style>
           body { font-family: Arial, sans-serif; margin: 24px; color: #111827; }
-          h1 { margin-bottom: 6px; }
+          h1 { margin-bottom: 6px; color: #1e3a8a; }
           .meta { margin-bottom: 16px; color: #374151; }
           .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
-          .card { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px; }
+          .card { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px; background: #f9fafb; }
           .card p { margin: 0; color: #6b7280; font-size: 12px; }
-          .card h3 { margin: 4px 0 0; font-size: 18px; }
-          table { width: 100%; border-collapse: collapse; }
+          .card h3 { margin: 4px 0 0; font-size: 18px; color: #1e3a8a; }
+          table { width: 100%; border-collapse: collapse; margin-top: 16px; }
           th, td { border: 1px solid #d1d5db; text-align: left; padding: 8px; font-size: 13px; }
-          th { background: #f3f4f6; }
+          th { background: #1e3a8a; color: white; }
+          tr:nth-child(even) { background: #f9fafb; }
         </style>
       </head>
       <body>
@@ -875,7 +1036,7 @@ function exportPdf() {
 
   const reportWindow = window.open("", "_blank", "width=980,height=700");
   if (!reportWindow) {
-    alert("Popup blocked. Please allow popups to export PDF.");
+    showToast("Popup blocked. Please allow popups to export PDF.", "error");
     return;
   }
 
@@ -884,6 +1045,8 @@ function exportPdf() {
   reportWindow.document.close();
   reportWindow.focus();
   reportWindow.print();
+  
+  showToast("PDF report opened for printing.", "success");
 }
 
 function onPlatformFormSubmit(event) {
@@ -899,15 +1062,17 @@ function onPlatformFormSubmit(event) {
   };
 
   if (!payload.name || payload.rate < 0 || payload.minCharge < 0) {
-    alert("Please provide valid platform values.");
+    showToast("Please provide valid platform values.", "error");
     return;
   }
 
   const existingIndex = state.platforms.findIndex((platform) => platform.id === payload.id);
   if (existingIndex >= 0) {
     state.platforms[existingIndex] = payload;
+    showToast(`Platform "${payload.name}" updated.`, "success");
   } else {
     state.platforms.push(payload);
+    showToast(`Platform "${payload.name}" added.`, "success");
   }
 
   saveCurrentMarketPlatforms();
@@ -1047,6 +1212,49 @@ function setupDatePickerBehavior() {
   });
 }
 
+function setupDurationPresets() {
+  ui.durationPresets.forEach((button) => {
+    button.addEventListener("click", () => {
+      const days = parseInt(button.getAttribute("data-days"), 10);
+      const today = new Date();
+      const endDate = new Date(today);
+      endDate.setDate(today.getDate() + days - 1);
+
+      ui.startDate.value = formatDateIso(today.toISOString());
+      ui.endDate.value = formatDateIso(endDate.toISOString());
+
+      showToast(`Duration set to ${days} days`, "info");
+    });
+  });
+}
+
+function setupPlatformSelection() {
+  ui.selectAllBtn.addEventListener("click", () => {
+    const checkboxes = ui.checkboxList.querySelectorAll("input[type='checkbox']");
+    checkboxes.forEach((cb) => (cb.checked = true));
+    showToast(`Selected ${checkboxes.length} platforms`, "info");
+  });
+
+  ui.selectNoneBtn.addEventListener("click", () => {
+    const checkboxes = ui.checkboxList.querySelectorAll("input[type='checkbox']");
+    checkboxes.forEach((cb) => (cb.checked = false));
+    showToast("All platforms cleared", "info");
+  });
+}
+
+function setDefaultDates() {
+  const today = new Date();
+  const twoWeeksLater = new Date(today);
+  twoWeeksLater.setDate(today.getDate() + 13);
+
+  if (!ui.startDate.value) {
+    ui.startDate.value = formatDateIso(today.toISOString());
+  }
+  if (!ui.endDate.value) {
+    ui.endDate.value = formatDateIso(twoWeeksLater.toISOString());
+  }
+}
+
 function initialize() {
   migrateLegacyIfNeeded();
   state.selectedMarket = readSelectedMarket();
@@ -1059,9 +1267,12 @@ function initialize() {
   refreshMarketUI();
   loadCurrentMarketPlatforms();
   renderAllPlatformViews();
+  setDefaultDates();
 
   setupTabs();
   setupDatePickerBehavior();
+  setupDurationPresets();
+  setupPlatformSelection();
   setupMarketSelection();
   setupResetDefaults();
 
