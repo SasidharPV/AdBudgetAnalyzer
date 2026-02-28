@@ -111,6 +111,20 @@ button {
   font: inherit;
 }
 
+.date-input-wrap {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.date-input-wrap input {
+  flex: 1;
+}
+
+.date-btn {
+  min-width: 40px;
+}
+
 input,
 select {
   background: #0b1220;
@@ -213,6 +227,10 @@ button:disabled {
 
 .card h3 {
   margin: 6px 0 0;
+}
+
+.card-meta {
+  color: var(--muted);
 }
 
 .viz-grid {

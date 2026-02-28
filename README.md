@@ -5,12 +5,15 @@ A simple, visual, GitHub Pages-ready web app to estimate job advertisement budge
 ## Features
 
 - Analyze budget by **date range** and selected platforms
-- Built-in default rate cards for common job-ad websites
+- Calendar-based date selection for campaign start/end
+- Built-in default rate cards for global + local job-ad websites
 - Configuration tab to:
   - Edit existing rates
   - Add new websites/channels
+  - Set country and currency per rate card
   - Delete platforms
   - Reset to default list
+- Analysis filters for country and currency
 - Cost breakdown visualizations:
   - Bar-based platform split
   - Donut share chart
@@ -34,6 +37,6 @@ Open `index.html` in your browser.
 
 ## Notes
 
-- Currency is currently set to `USD`.
+- Supports multi-currency rate cards by platform.
 - Platform rates are editable in the **Configuration** tab.
 - Rates are estimates and should be updated based on latest platform pricing.

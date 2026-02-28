@@ -4,6 +4,8 @@ const DEFAULT_PLATFORMS = [
   {
     id: crypto.randomUUID(),
     name: "LinkedIn Jobs",
+    country: "United States",
+    currency: "USD",
     pricingModel: "perDay",
     rate: 45,
     minCharge: 0,
@@ -12,6 +14,8 @@ const DEFAULT_PLATFORMS = [
   {
     id: crypto.randomUUID(),
     name: "Indeed Sponsored",
+    country: "United States",
+    currency: "USD",
     pricingModel: "perDay",
     rate: 32,
     minCharge: 0,
@@ -20,26 +24,72 @@ const DEFAULT_PLATFORMS = [
   {
     id: crypto.randomUUID(),
     name: "Naukri",
+    country: "India",
+    currency: "INR",
     pricingModel: "perWeek",
-    rate: 140,
+    rate: 4500,
     minCharge: 0,
     notes: "Weekly visibility package",
   },
   {
     id: crypto.randomUUID(),
-    name: "Glassdoor",
-    pricingModel: "perPost",
-    rate: 299,
+    name: "Foundit",
+    country: "India",
+    currency: "INR",
+    pricingModel: "perWeek",
+    rate: 3800,
     minCharge: 0,
-    notes: "Single posting package",
+    notes: "Job posting + database access bundle",
   },
   {
     id: crypto.randomUUID(),
-    name: "Monster",
-    pricingModel: "perWeek",
-    rate: 120,
+    name: "TimesJobs",
+    country: "India",
+    currency: "INR",
+    pricingModel: "perPost",
+    rate: 2500,
     minCharge: 0,
-    notes: "Weekly boosted listing",
+    notes: "Single listing package",
+  },
+  {
+    id: crypto.randomUUID(),
+    name: "Seek",
+    country: "Australia",
+    currency: "AUD",
+    pricingModel: "perPost",
+    rate: 250,
+    minCharge: 0,
+    notes: "Standard listing",
+  },
+  {
+    id: crypto.randomUUID(),
+    name: "Reed",
+    country: "United Kingdom",
+    currency: "GBP",
+    pricingModel: "perPost",
+    rate: 89,
+    minCharge: 0,
+    notes: "Single ad slot",
+  },
+  {
+    id: crypto.randomUUID(),
+    name: "JobStreet",
+    country: "Singapore",
+    currency: "SGD",
+    pricingModel: "perPost",
+    rate: 180,
+    minCharge: 0,
+    notes: "Single post package",
+  },
+  {
+    id: crypto.randomUUID(),
+    name: "Bayt",
+    country: "United Arab Emirates",
+    currency: "AED",
+    pricingModel: "perWeek",
+    rate: 650,
+    minCharge: 0,
+    notes: "Weekly promoted listing",
   },
 ];
 
@@ -57,10 +107,14 @@ const ui = {
   campaignName: document.getElementById("campaignName"),
   startDate: document.getElementById("startDate"),
   endDate: document.getElementById("endDate"),
+  analysisCountry: document.getElementById("analysisCountry"),
+  analysisCurrency: document.getElementById("analysisCurrency"),
+  dateButtons: document.querySelectorAll(".date-btn"),
   checkboxList: document.getElementById("platformCheckboxList"),
   results: document.getElementById("results"),
   emptyState: document.getElementById("emptyState"),
   totalBudget: document.getElementById("totalBudget"),
+  totalBudgetMeta: document.getElementById("totalBudgetMeta"),
   durationDays: document.getElementById("durationDays"),
   platformCount: document.getElementById("platformCount"),
   barChart: document.getElementById("barChart"),
@@ -70,6 +124,8 @@ const ui = {
   platformForm: document.getElementById("platformForm"),
   editingId: document.getElementById("editingId"),
   platformName: document.getElementById("platformName"),
+  country: document.getElementById("country"),
+  currency: document.getElementById("currency"),
   pricingModel: document.getElementById("pricingModel"),
   rate: document.getElementById("rate"),
   minCharge: document.getElementById("minCharge"),
@@ -81,31 +137,48 @@ const ui = {
   exportPdfBtn: document.getElementById("exportPdfBtn"),
 };
 
-function formatCurrency(value) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
-  }).format(value);
+function formatCurrency(value, currency = "USD") {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 2,
+    }).format(value);
+  } catch {
+    return `${Number(value).toFixed(2)} ${currency}`;
+  }
+}
+
+function sanitizePlatform(platform) {
+  return {
+    id: platform.id || crypto.randomUUID(),
+    name: platform.name || "Unnamed Platform",
+    country: platform.country || "Global",
+    currency: platform.currency || "USD",
+    pricingModel: platform.pricingModel || "perPost",
+    rate: Number(platform.rate ?? 0),
+    minCharge: Number(platform.minCharge ?? 0),
+    notes: platform.notes || "",
+  };
 }
 
 function readPlatforms() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PLATFORMS));
-    return [...DEFAULT_PLATFORMS];
+    return DEFAULT_PLATFORMS.map((item) => ({ ...item }));
   }
 
   try {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed;
+      return parsed.map(sanitizePlatform);
     }
   } catch {
-    return [...DEFAULT_PLATFORMS];
+    return DEFAULT_PLATFORMS.map((item) => ({ ...item }));
   }
 
-  return [...DEFAULT_PLATFORMS];
+  return DEFAULT_PLATFORMS.map((item) => ({ ...item }));
 }
 
 function persistPlatforms() {
@@ -148,17 +221,59 @@ function formatDateIso(value) {
   return date.toISOString().slice(0, 10);
 }
 
+function uniqueValues(values) {
+  return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+}
+
+function renderAnalysisFilters() {
+  const countryOptions = uniqueValues(state.platforms.map((item) => item.country));
+  const currencyOptions = uniqueValues(state.platforms.map((item) => item.currency));
+
+  const prevCountry = ui.analysisCountry.value || "all";
+  const prevCurrency = ui.analysisCurrency.value || "all";
+
+  ui.analysisCountry.innerHTML = `<option value="all">All Countries</option>${countryOptions
+    .map((country) => `<option value="${country}">${country}</option>`)
+    .join("")}`;
+
+  ui.analysisCurrency.innerHTML = `<option value="all">All Currencies</option>${currencyOptions
+    .map((currency) => `<option value="${currency}">${currency}</option>`)
+    .join("")}`;
+
+  ui.analysisCountry.value = countryOptions.includes(prevCountry) ? prevCountry : "all";
+  ui.analysisCurrency.value = currencyOptions.includes(prevCurrency) ? prevCurrency : "all";
+}
+
+function getFilteredPlatforms() {
+  const countryFilter = ui.analysisCountry.value;
+  const currencyFilter = ui.analysisCurrency.value;
+
+  return state.platforms.filter((platform) => {
+    const countryMatch = countryFilter === "all" || platform.country === countryFilter;
+    const currencyMatch = currencyFilter === "all" || platform.currency === currencyFilter;
+    return countryMatch && currencyMatch;
+  });
+}
+
 function renderPlatformCheckboxes() {
   ui.checkboxList.innerHTML = "";
+  const filtered = getFilteredPlatforms();
 
-  state.platforms.forEach((platform) => {
+  if (filtered.length === 0) {
+    const message = document.createElement("p");
+    message.textContent = "No platforms match current country/currency filters.";
+    ui.checkboxList.appendChild(message);
+    return;
+  }
+
+  filtered.forEach((platform) => {
     const label = document.createElement("label");
     const input = document.createElement("input");
     input.type = "checkbox";
     input.value = platform.id;
 
     const text = document.createElement("span");
-    text.textContent = `${platform.name} (${pricingModelLabel(platform.pricingModel)})`;
+    text.textContent = `${platform.name} • ${platform.country} • ${platform.currency} (${pricingModelLabel(platform.pricingModel)})`;
 
     label.appendChild(input);
     label.appendChild(text);
@@ -173,9 +288,11 @@ function renderPlatformTable() {
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${platform.name}</td>
+      <td>${platform.country}</td>
+      <td>${platform.currency}</td>
       <td>${pricingModelLabel(platform.pricingModel)}</td>
-      <td>${formatCurrency(Number(platform.rate))}</td>
-      <td>${formatCurrency(Number(platform.minCharge || 0))}</td>
+      <td>${formatCurrency(Number(platform.rate), platform.currency)}</td>
+      <td>${formatCurrency(Number(platform.minCharge || 0), platform.currency)}</td>
       <td>${platform.notes || "-"}</td>
       <td>
         <div class="table-action">
@@ -191,10 +308,12 @@ function renderPlatformTable() {
 function resetPlatformForm() {
   ui.editingId.value = "";
   ui.platformForm.reset();
+  ui.currency.value = "USD";
   ui.minCharge.value = 0;
 }
 
 function updateAllPlatformViews() {
+  renderAnalysisFilters();
   renderPlatformCheckboxes();
   renderPlatformTable();
 }
@@ -235,6 +354,7 @@ function analyzeBudget(event) {
   });
 
   const total = breakdown.reduce((sum, current) => sum + current.cost, 0);
+  const currencies = uniqueValues(breakdown.map((item) => item.currency));
   const campaignName = ui.campaignName.value.trim() || "Untitled Campaign";
 
   state.lastAnalysis = {
@@ -244,16 +364,24 @@ function analyzeBudget(event) {
     days,
     breakdown,
     total,
+    currencies,
   };
 
-  renderResults({ days, breakdown, total });
+  renderResults({ days, breakdown, total, currencies });
 }
 
-function renderResults({ days, breakdown, total }) {
+function renderResults({ days, breakdown, total, currencies }) {
   ui.emptyState.classList.add("hidden");
   ui.results.classList.remove("hidden");
 
-  ui.totalBudget.textContent = formatCurrency(total);
+  if (currencies.length === 1) {
+    ui.totalBudget.textContent = formatCurrency(total, currencies[0]);
+    ui.totalBudgetMeta.textContent = currencies[0];
+  } else {
+    ui.totalBudget.textContent = `${total.toFixed(2)} (mixed)`;
+    ui.totalBudgetMeta.textContent = `Mixed currencies: ${currencies.join(", ")}`;
+  }
+
   ui.durationDays.textContent = `${days} day${days > 1 ? "s" : ""}`;
   ui.platformCount.textContent = String(breakdown.length);
   ui.exportCsvBtn.disabled = false;
@@ -264,147 +392,18 @@ function renderResults({ days, breakdown, total }) {
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${item.name}</td>
+      <td>${item.country}</td>
+      <td>${item.currency}</td>
       <td>${pricingModelLabel(item.pricingModel)}</td>
-      <td>${formatCurrency(Number(item.rate))}</td>
+      <td>${formatCurrency(Number(item.rate), item.currency)}</td>
       <td>${item.units}</td>
-      <td>${formatCurrency(item.cost)}</td>
+      <td>${formatCurrency(item.cost, item.currency)}</td>
     `;
     ui.breakdownBody.appendChild(row);
   });
 
   renderBarChart(breakdown, total);
   renderDonut(breakdown, total);
-}
-
-function csvEscape(value) {
-  const text = String(value ?? "");
-  if (text.includes(",") || text.includes("\n") || text.includes('"')) {
-    return `"${text.replaceAll('"', '""')}"`;
-  }
-  return text;
-}
-
-function exportCsv() {
-  if (!state.lastAnalysis) {
-    alert("Run an analysis before exporting.");
-    return;
-  }
-
-  const { campaignName, startDate, endDate, days, total, breakdown } = state.lastAnalysis;
-  const headerRows = [
-    ["Campaign", campaignName],
-    ["Start Date", formatDate(startDate)],
-    ["End Date", formatDate(endDate)],
-    ["Duration (Days)", days],
-    ["Total Budget", total.toFixed(2)],
-    [],
-    ["Platform", "Pricing Model", "Rate", "Units", "Estimated Cost", "Notes"],
-  ];
-
-  const rows = breakdown.map((item) => [
-    item.name,
-    pricingModelLabel(item.pricingModel),
-    Number(item.rate).toFixed(2),
-    item.units,
-    Number(item.cost).toFixed(2),
-    item.notes || "",
-  ]);
-
-  const csv = [...headerRows, ...rows].map((row) => row.map(csvEscape).join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `ad-budget-${formatDateIso(startDate) || "report"}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
-
-function exportPdf() {
-  if (!state.lastAnalysis) {
-    alert("Run an analysis before exporting.");
-    return;
-  }
-
-  const { campaignName, startDate, endDate, days, total, breakdown } = state.lastAnalysis;
-  const tableRows = breakdown
-    .map(
-      (item) => `
-      <tr>
-        <td>${item.name}</td>
-        <td>${pricingModelLabel(item.pricingModel)}</td>
-        <td>${formatCurrency(Number(item.rate))}</td>
-        <td>${item.units}</td>
-        <td>${formatCurrency(item.cost)}</td>
-      </tr>
-    `
-    )
-    .join("");
-
-  const reportHtml = `
-    <!doctype html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8" />
-        <title>Ad Budget Report</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 24px; color: #111827; }
-          h1 { margin-bottom: 6px; }
-          .meta { margin-bottom: 16px; color: #374151; }
-          .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
-          .card { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px; }
-          .card p { margin: 0; color: #6b7280; font-size: 12px; }
-          .card h3 { margin: 4px 0 0; font-size: 18px; }
-          table { width: 100%; border-collapse: collapse; }
-          th, td { border: 1px solid #d1d5db; text-align: left; padding: 8px; font-size: 13px; }
-          th { background: #f3f4f6; }
-        </style>
-      </head>
-      <body>
-        <h1>Ad Budget Report</h1>
-        <div class="meta">
-          <div><strong>Campaign:</strong> ${campaignName}</div>
-          <div><strong>Duration:</strong> ${formatDate(startDate)} to ${formatDate(endDate)} (${days} days)</div>
-          <div><strong>Generated:</strong> ${formatDate(new Date().toISOString())}</div>
-        </div>
-
-        <div class="summary">
-          <div class="card"><p>Total Budget</p><h3>${formatCurrency(total)}</h3></div>
-          <div class="card"><p>Platforms</p><h3>${breakdown.length}</h3></div>
-          <div class="card"><p>Duration</p><h3>${days} day${days > 1 ? "s" : ""}</h3></div>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Platform</th>
-              <th>Pricing Model</th>
-              <th>Rate</th>
-              <th>Units</th>
-              <th>Estimated Cost</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${tableRows}
-          </tbody>
-        </table>
-      </body>
-    </html>
-  `;
-
-  const reportWindow = window.open("", "_blank", "width=980,height=700");
-  if (!reportWindow) {
-    alert("Popup blocked. Please allow popups to export PDF.");
-    return;
-  }
-
-  reportWindow.document.open();
-  reportWindow.document.write(reportHtml);
-  reportWindow.document.close();
-  reportWindow.focus();
-  reportWindow.print();
 }
 
 function renderBarChart(breakdown, total) {
@@ -416,7 +415,7 @@ function renderBarChart(breakdown, total) {
     row.innerHTML = `
       <div class="bar-label">
         <span>${item.name}</span>
-        <span>${formatCurrency(item.cost)} (${percentage.toFixed(1)}%)</span>
+        <span>${formatCurrency(item.cost, item.currency)} (${percentage.toFixed(1)}%)</span>
       </div>
       <div class="bar-track">
         <div class="bar-fill" style="width: ${percentage}%; background: ${colors[index % colors.length]};"></div>
@@ -451,19 +450,169 @@ function renderDonut(breakdown, total) {
   });
 }
 
+function csvEscape(value) {
+  const text = String(value ?? "");
+  if (text.includes(",") || text.includes("\n") || text.includes('"')) {
+    return `"${text.replaceAll('"', '""')}"`;
+  }
+  return text;
+}
+
+function exportCsv() {
+  if (!state.lastAnalysis) {
+    alert("Run an analysis before exporting.");
+    return;
+  }
+
+  const { campaignName, startDate, endDate, days, total, breakdown, currencies } = state.lastAnalysis;
+  const totalText =
+    currencies.length === 1
+      ? formatCurrency(total, currencies[0])
+      : `${total.toFixed(2)} (mixed: ${currencies.join("/")})`;
+
+  const headerRows = [
+    ["Campaign", campaignName],
+    ["Start Date", formatDate(startDate)],
+    ["End Date", formatDate(endDate)],
+    ["Duration (Days)", days],
+    ["Total Budget", totalText],
+    [],
+    ["Platform", "Country", "Currency", "Pricing Model", "Rate", "Units", "Estimated Cost", "Notes"],
+  ];
+
+  const rows = breakdown.map((item) => [
+    item.name,
+    item.country,
+    item.currency,
+    pricingModelLabel(item.pricingModel),
+    Number(item.rate).toFixed(2),
+    item.units,
+    Number(item.cost).toFixed(2),
+    item.notes || "",
+  ]);
+
+  const csv = [...headerRows, ...rows].map((row) => row.map(csvEscape).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `ad-budget-${formatDateIso(startDate) || "report"}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function exportPdf() {
+  if (!state.lastAnalysis) {
+    alert("Run an analysis before exporting.");
+    return;
+  }
+
+  const { campaignName, startDate, endDate, days, total, breakdown, currencies } = state.lastAnalysis;
+  const totalText =
+    currencies.length === 1
+      ? formatCurrency(total, currencies[0])
+      : `${total.toFixed(2)} (mixed: ${currencies.join("/")})`;
+
+  const tableRows = breakdown
+    .map(
+      (item) => `
+      <tr>
+        <td>${item.name}</td>
+        <td>${item.country}</td>
+        <td>${item.currency}</td>
+        <td>${pricingModelLabel(item.pricingModel)}</td>
+        <td>${formatCurrency(Number(item.rate), item.currency)}</td>
+        <td>${item.units}</td>
+        <td>${formatCurrency(item.cost, item.currency)}</td>
+      </tr>
+    `
+    )
+    .join("");
+
+  const reportHtml = `
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <title>Ad Budget Report</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 24px; color: #111827; }
+          h1 { margin-bottom: 6px; }
+          .meta { margin-bottom: 16px; color: #374151; }
+          .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+          .card { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px; }
+          .card p { margin: 0; color: #6b7280; font-size: 12px; }
+          .card h3 { margin: 4px 0 0; font-size: 18px; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { border: 1px solid #d1d5db; text-align: left; padding: 8px; font-size: 13px; }
+          th { background: #f3f4f6; }
+        </style>
+      </head>
+      <body>
+        <h1>Ad Budget Report</h1>
+        <div class="meta">
+          <div><strong>Campaign:</strong> ${campaignName}</div>
+          <div><strong>Duration:</strong> ${formatDate(startDate)} to ${formatDate(endDate)} (${days} days)</div>
+          <div><strong>Total:</strong> ${totalText}</div>
+          <div><strong>Generated:</strong> ${formatDate(new Date().toISOString())}</div>
+        </div>
+
+        <div class="summary">
+          <div class="card"><p>Total Budget</p><h3>${totalText}</h3></div>
+          <div class="card"><p>Platforms</p><h3>${breakdown.length}</h3></div>
+          <div class="card"><p>Duration</p><h3>${days} day${days > 1 ? "s" : ""}</h3></div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Platform</th>
+              <th>Country</th>
+              <th>Currency</th>
+              <th>Pricing Model</th>
+              <th>Rate</th>
+              <th>Units</th>
+              <th>Estimated Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+      </body>
+    </html>
+  `;
+
+  const reportWindow = window.open("", "_blank", "width=980,height=700");
+  if (!reportWindow) {
+    alert("Popup blocked. Please allow popups to export PDF.");
+    return;
+  }
+
+  reportWindow.document.open();
+  reportWindow.document.write(reportHtml);
+  reportWindow.document.close();
+  reportWindow.focus();
+  reportWindow.print();
+}
+
 function onPlatformFormSubmit(event) {
   event.preventDefault();
 
   const payload = {
     id: ui.editingId.value || crypto.randomUUID(),
     name: ui.platformName.value.trim(),
+    country: ui.country.value.trim(),
+    currency: ui.currency.value,
     pricingModel: ui.pricingModel.value,
     rate: Number(ui.rate.value),
     minCharge: Number(ui.minCharge.value || 0),
     notes: ui.notes.value.trim(),
   };
 
-  if (!payload.name || payload.rate < 0 || payload.minCharge < 0) {
+  if (!payload.name || !payload.country || !payload.currency || payload.rate < 0 || payload.minCharge < 0) {
     alert("Please provide valid platform values.");
     return;
   }
@@ -499,6 +648,8 @@ function onTableAction(event) {
   if (action === "edit") {
     ui.editingId.value = platform.id;
     ui.platformName.value = platform.name;
+    ui.country.value = platform.country;
+    ui.currency.value = platform.currency;
     ui.pricingModel.value = platform.pricingModel;
     ui.rate.value = platform.rate;
     ui.minCharge.value = platform.minCharge;
@@ -524,10 +675,46 @@ function setupResetDefaults() {
     const confirmed = confirm("Reset all configured platforms to default values?");
     if (!confirmed) return;
 
-    state.platforms = [...DEFAULT_PLATFORMS];
+    state.platforms = DEFAULT_PLATFORMS.map((item) => ({ ...item }));
     persistPlatforms();
     updateAllPlatformViews();
     resetPlatformForm();
+  });
+}
+
+function setupAnalysisFilters() {
+  ui.analysisCountry.addEventListener("change", renderPlatformCheckboxes);
+  ui.analysisCurrency.addEventListener("change", renderPlatformCheckboxes);
+}
+
+function openDatePicker(targetId) {
+  const input = document.getElementById(targetId);
+  if (!input) return;
+
+  if (typeof input.showPicker === "function") {
+    input.showPicker();
+    return;
+  }
+
+  input.focus();
+}
+
+function setupDatePickerBehavior() {
+  [ui.startDate, ui.endDate].forEach((input) => {
+    input.addEventListener("keydown", (event) => {
+      event.preventDefault();
+    });
+
+    input.addEventListener("click", () => {
+      openDatePicker(input.id);
+    });
+  });
+
+  ui.dateButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const targetId = button.getAttribute("data-date-target");
+      openDatePicker(targetId);
+    });
   });
 }
 
@@ -535,6 +722,8 @@ function initialize() {
   state.platforms = readPlatforms();
   updateAllPlatformViews();
   setupTabs();
+  setupAnalysisFilters();
+  setupDatePickerBehavior();
 
   ui.analysisForm.addEventListener("submit", analyzeBudget);
   ui.platformForm.addEventListener("submit", onPlatformFormSubmit);

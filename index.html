@@ -40,11 +40,29 @@
               </label>
               <label>
                 Start date
-                <input type="date" id="startDate" required />
+                <div class="date-input-wrap">
+                  <input type="date" id="startDate" required readonly />
+                  <button type="button" class="small-btn date-btn" data-date-target="startDate" aria-label="Open start date calendar">📅</button>
+                </div>
               </label>
               <label>
                 End date
-                <input type="date" id="endDate" required />
+                <div class="date-input-wrap">
+                  <input type="date" id="endDate" required readonly />
+                  <button type="button" class="small-btn date-btn" data-date-target="endDate" aria-label="Open end date calendar">📅</button>
+                </div>
+              </label>
+              <label>
+                Country filter
+                <select id="analysisCountry">
+                  <option value="all">All Countries</option>
+                </select>
+              </label>
+              <label>
+                Currency filter
+                <select id="analysisCurrency">
+                  <option value="all">All Currencies</option>
+                </select>
               </label>
 
               <fieldset class="platform-selector">
@@ -67,6 +85,7 @@
                 <article class="card">
                   <p>Total Budget</p>
                   <h3 id="totalBudget">$0</h3>
+                  <small id="totalBudgetMeta" class="card-meta">USD</small>
                 </article>
                 <article class="card">
                   <p>Duration</p>
@@ -138,11 +157,28 @@
                 </select>
               </label>
               <label>
-                Rate (USD)
+                Rate
                 <input type="number" id="rate" min="0" step="0.01" required />
               </label>
               <label>
-                Minimum Charge (USD)
+                Country
+                <input type="text" id="country" placeholder="India" required />
+              </label>
+              <label>
+                Currency
+                <select id="currency" required>
+                  <option value="USD">USD</option>
+                  <option value="INR">INR</option>
+                  <option value="GBP">GBP</option>
+                  <option value="EUR">EUR</option>
+                  <option value="AUD">AUD</option>
+                  <option value="CAD">CAD</option>
+                  <option value="SGD">SGD</option>
+                  <option value="AED">AED</option>
+                </select>
+              </label>
+              <label>
+                Minimum Charge
                 <input type="number" id="minCharge" min="0" step="0.01" value="0" />
               </label>
               <label class="full-width">
@@ -162,6 +198,8 @@
                 <thead>
                   <tr>
                     <th>Platform</th>
+                    <th>Country</th>
+                    <th>Currency</th>
                     <th>Model</th>
                     <th>Rate</th>
                     <th>Minimum</th>
@@ -169,6 +207,8 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
+                      <th>Country</th>
+                      <th>Currency</th>
                 <tbody id="platformTableBody"></tbody>
               </table>
             </section>
