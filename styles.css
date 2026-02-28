@@ -199,6 +199,12 @@ legend {
 
 .export-row {
   margin-bottom: 12px;
+  align-items: center;
+}
+
+.copy-status {
+  color: var(--muted);
+  font-size: 13px;
 }
 
 button:disabled {
@@ -249,12 +255,16 @@ button:disabled {
 
 .bar-chart {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .bar-row {
   display: grid;
-  gap: 6px;
+  gap: 7px;
+  padding: 8px;
+  background: #0b1220;
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
 
 .bar-label {
@@ -265,7 +275,7 @@ button:disabled {
 }
 
 .bar-track {
-  height: 10px;
+  height: 12px;
   background: #334155;
   border-radius: 999px;
   overflow: hidden;
@@ -274,6 +284,8 @@ button:disabled {
 .bar-fill {
   height: 100%;
   border-radius: 999px;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
+  transition: width 450ms ease;
 }
 
 .donut-wrap {
@@ -295,6 +307,22 @@ button:disabled {
   inset: 32px;
   background: var(--card);
   border-radius: 50%;
+}
+
+.donut-center {
+  position: absolute;
+  inset: 52px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.donut-center strong {
+  color: var(--text);
+  font-size: 14px;
 }
 
 .legend {

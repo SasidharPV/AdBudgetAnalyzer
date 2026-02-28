@@ -100,6 +100,10 @@
               <div class="action-row export-row">
                 <button type="button" id="exportCsvBtn" class="ghost-btn" disabled>Export CSV</button>
                 <button type="button" id="exportPdfBtn" class="ghost-btn" disabled>Export PDF</button>
+                <button type="button" id="copyReportBtn" class="ghost-btn" disabled>Copy Report</button>
+                <button type="button" id="copyTableBtn" class="ghost-btn" disabled>Copy Table</button>
+                <button type="button" id="copyChartBtn" class="ghost-btn" disabled>Copy Chart Image</button>
+                <span id="copyStatus" class="copy-status" aria-live="polite"></span>
               </div>
 
               <div class="viz-grid">
@@ -110,7 +114,9 @@
                 <section class="viz-card">
                   <h3>Share by Platform</h3>
                   <div class="donut-wrap">
-                    <div id="donut" class="donut"></div>
+                    <div id="donut" class="donut">
+                      <div id="donutCenter" class="donut-center"></div>
+                    </div>
                     <ul id="donutLegend" class="legend"></ul>
                   </div>
                 </section>
@@ -122,6 +128,8 @@
                   <thead>
                     <tr>
                       <th>Platform</th>
+                      <th>Country</th>
+                      <th>Currency</th>
                       <th>Pricing Model</th>
                       <th>Rate</th>
                       <th>Units</th>
@@ -207,8 +215,6 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
-                      <th>Country</th>
-                      <th>Currency</th>
                 <tbody id="platformTableBody"></tbody>
               </table>
             </section>

@@ -119,6 +119,7 @@ const ui = {
   platformCount: document.getElementById("platformCount"),
   barChart: document.getElementById("barChart"),
   donut: document.getElementById("donut"),
+  donutCenter: document.getElementById("donutCenter"),
   donutLegend: document.getElementById("donutLegend"),
   breakdownBody: document.getElementById("breakdownBody"),
   platformForm: document.getElementById("platformForm"),
@@ -135,6 +136,10 @@ const ui = {
   resetDefaultsBtn: document.getElementById("resetDefaultsBtn"),
   exportCsvBtn: document.getElementById("exportCsvBtn"),
   exportPdfBtn: document.getElementById("exportPdfBtn"),
+  copyReportBtn: document.getElementById("copyReportBtn"),
+  copyTableBtn: document.getElementById("copyTableBtn"),
+  copyChartBtn: document.getElementById("copyChartBtn"),
+  copyStatus: document.getElementById("copyStatus"),
 };
 
 function formatCurrency(value, currency = "USD") {
@@ -386,6 +391,10 @@ function renderResults({ days, breakdown, total, currencies }) {
   ui.platformCount.textContent = String(breakdown.length);
   ui.exportCsvBtn.disabled = false;
   ui.exportPdfBtn.disabled = false;
+  ui.copyReportBtn.disabled = false;
+  ui.copyTableBtn.disabled = false;
+  ui.copyChartBtn.disabled = false;
+  ui.copyStatus.textContent = "";
 
   ui.breakdownBody.innerHTML = "";
   breakdown.forEach((item) => {
@@ -408,7 +417,9 @@ function renderResults({ days, breakdown, total, currencies }) {
 
 function renderBarChart(breakdown, total) {
   ui.barChart.innerHTML = "";
-  breakdown.forEach((item, index) => {
+  const sortedBreakdown = [...breakdown].sort((a, b) => b.cost - a.cost);
+
+  sortedBreakdown.forEach((item, index) => {
     const percentage = total === 0 ? 0 : (item.cost / total) * 100;
     const row = document.createElement("div");
     row.className = "bar-row";
@@ -418,7 +429,7 @@ function renderBarChart(breakdown, total) {
         <span>${formatCurrency(item.cost, item.currency)} (${percentage.toFixed(1)}%)</span>
       </div>
       <div class="bar-track">
-        <div class="bar-fill" style="width: ${percentage}%; background: ${colors[index % colors.length]};"></div>
+        <div class="bar-fill" style="width: ${percentage}%; background: linear-gradient(90deg, ${colors[index % colors.length]}, ${colors[(index + 2) % colors.length]});"></div>
       </div>
     `;
     ui.barChart.appendChild(row);
@@ -437,6 +448,9 @@ function renderDonut(breakdown, total) {
   });
 
   ui.donut.style.background = `conic-gradient(${segments.join(",")})`;
+  if (ui.donutCenter) {
+    ui.donutCenter.innerHTML = `<strong>${breakdown.length}</strong><span>platforms</span>`;
+  }
   ui.donutLegend.innerHTML = "";
 
   breakdown.forEach((item, index) => {
@@ -456,6 +470,178 @@ function csvEscape(value) {
     return `"${text.replaceAll('"', '""')}"`;
   }
   return text;
+}
+
+function setCopyStatus(message, isError = false) {
+  ui.copyStatus.textContent = message;
+  ui.copyStatus.style.color = isError ? "#fca5a5" : "#cbd5e1";
+}
+
+function buildReportText() {
+  if (!state.lastAnalysis) return "";
+
+  const { campaignName, startDate, endDate, days, total, breakdown, currencies } = state.lastAnalysis;
+  const totalText =
+    currencies.length === 1
+      ? formatCurrency(total, currencies[0])
+      : `${total.toFixed(2)} (mixed: ${currencies.join("/")})`;
+
+  const lines = [
+    `Ad Budget Report`,
+    `Campaign: ${campaignName}`,
+    `Duration: ${formatDate(startDate)} to ${formatDate(endDate)} (${days} days)`,
+    `Total: ${totalText}`,
+    "",
+    "Breakdown:",
+  ];
+
+  breakdown.forEach((item) => {
+    lines.push(
+      `- ${item.name} (${item.country}, ${item.currency}, ${pricingModelLabel(item.pricingModel)}): ${formatCurrency(
+        item.cost,
+        item.currency
+      )}`
+    );
+  });
+
+  return lines.join("\n");
+}
+
+function buildTableText() {
+  if (!state.lastAnalysis) return "";
+
+  const header = ["Platform", "Country", "Currency", "Model", "Rate", "Units", "Estimated Cost"];
+  const rows = state.lastAnalysis.breakdown.map((item) => [
+    item.name,
+    item.country,
+    item.currency,
+    pricingModelLabel(item.pricingModel),
+    formatCurrency(Number(item.rate), item.currency),
+    String(item.units),
+    formatCurrency(item.cost, item.currency),
+  ]);
+
+  return [header, ...rows].map((row) => row.join("\t")).join("\n");
+}
+
+async function copyReportText() {
+  if (!state.lastAnalysis) {
+    alert("Run an analysis before copying.");
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(buildReportText());
+    setCopyStatus("Report copied. Paste into Docs or slides.");
+  } catch {
+    setCopyStatus("Could not copy report. Browser blocked clipboard access.", true);
+  }
+}
+
+async function copyTableText() {
+  if (!state.lastAnalysis) {
+    alert("Run an analysis before copying.");
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(buildTableText());
+    setCopyStatus("Table copied. Paste into Docs/Excel/PowerPoint.");
+  } catch {
+    setCopyStatus("Could not copy table. Browser blocked clipboard access.", true);
+  }
+}
+
+function renderChartCanvas(analysis) {
+  const width = 1200;
+  const height = 680;
+  const padding = 60;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+
+  ctx.fillStyle = "#0f172a";
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = "700 32px Inter, Arial, sans-serif";
+  ctx.fillText("Ad Budget Breakdown", padding, 52);
+
+  ctx.fillStyle = "#cbd5e1";
+  ctx.font = "500 18px Inter, Arial, sans-serif";
+  const meta = `${analysis.campaignName} • ${formatDate(analysis.startDate)} to ${formatDate(analysis.endDate)}`;
+  ctx.fillText(meta, padding, 84);
+
+  const sorted = [...analysis.breakdown].sort((a, b) => b.cost - a.cost);
+  const maxCost = Math.max(...sorted.map((item) => item.cost), 1);
+  const chartTop = 140;
+  const rowHeight = 52;
+  const barAreaWidth = width - padding * 2 - 280;
+
+  sorted.forEach((item, index) => {
+    const y = chartTop + index * rowHeight;
+    const color = colors[index % colors.length];
+    const barWidth = (item.cost / maxCost) * barAreaWidth;
+
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "600 16px Inter, Arial, sans-serif";
+    ctx.fillText(item.name, padding, y + 20);
+
+    ctx.fillStyle = "#334155";
+    ctx.fillRect(padding + 220, y + 6, barAreaWidth, 20);
+
+    const gradient = ctx.createLinearGradient(padding + 220, y + 6, padding + 220 + barWidth, y + 26);
+    gradient.addColorStop(0, color);
+    gradient.addColorStop(1, "#38bdf8");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(padding + 220, y + 6, barWidth, 20);
+
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "500 14px Inter, Arial, sans-serif";
+    ctx.fillText(
+      `${formatCurrency(item.cost, item.currency)} (${((item.cost / analysis.total) * 100).toFixed(1)}%)`,
+      padding + 220,
+      y + 42
+    );
+  });
+
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "500 16px Inter, Arial, sans-serif";
+  const totalText =
+    analysis.currencies.length === 1
+      ? formatCurrency(analysis.total, analysis.currencies[0])
+      : `${analysis.total.toFixed(2)} (mixed: ${analysis.currencies.join("/")})`;
+  ctx.fillText(`Total Budget: ${totalText}`, padding, height - 32);
+
+  return canvas;
+}
+
+async function copyChartImage() {
+  if (!state.lastAnalysis) {
+    alert("Run an analysis before copying.");
+    return;
+  }
+
+  const canvas = renderChartCanvas(state.lastAnalysis);
+
+  if (!navigator.clipboard || typeof ClipboardItem === "undefined") {
+    setCopyStatus("Image clipboard not supported here. Use Export PDF as fallback.", true);
+    return;
+  }
+
+  try {
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+    if (!blob) {
+      setCopyStatus("Could not generate chart image.", true);
+      return;
+    }
+
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    setCopyStatus("Chart image copied. Paste directly into PPT/Docs.");
+  } catch {
+    setCopyStatus("Could not copy chart image. Browser permissions may block it.", true);
+  }
 }
 
 function exportCsv() {
@@ -731,6 +917,9 @@ function initialize() {
   ui.clearFormBtn.addEventListener("click", resetPlatformForm);
   ui.exportCsvBtn.addEventListener("click", exportCsv);
   ui.exportPdfBtn.addEventListener("click", exportPdf);
+  ui.copyReportBtn.addEventListener("click", copyReportText);
+  ui.copyTableBtn.addEventListener("click", copyTableText);
+  ui.copyChartBtn.addEventListener("click", copyChartImage);
   setupResetDefaults();
 }
 

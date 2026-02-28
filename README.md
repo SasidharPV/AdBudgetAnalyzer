@@ -21,6 +21,10 @@ A simple, visual, GitHub Pages-ready web app to estimate job advertisement budge
 - Export options:
   - CSV download for spreadsheet usage
   - PDF-ready report export via browser print dialog
+- Copy options for documentation workflows:
+  - Copy full report text (for docs/notes)
+  - Copy table as tab-separated text (for docs/sheets)
+  - Copy chart image directly to clipboard (for PPT/docs)
 - Data persistence using browser `localStorage`
 
 ## Run locally
